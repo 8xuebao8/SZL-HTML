@@ -1,0 +1,1302 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath fill='%23006d5b' d='M32 4 56 28 32 60 8 28z'/%3E%3Cpath fill='%23fff' d='m32 14 12 14-12 22-12-22z'/%3E%3C/svg%3E">
+  <title>宝石物性检索 · Gem Property Finder</title>
+  <style>
+    :root{
+      --bg:#f3f5f2;--surface:#fff;--surface-2:#f6f9f7;--surface-3:#eaf1ed;
+      --ink:#17231f;--muted:#5d6d68;--faint:#8a9893;
+      --line:#dfe6e2;--line-strong:#c4d2cb;
+      --accent:#0b6e5c;--accent-ink:#fff;--accent-soft:#dcf1ea;--accent-text:#05584a;--ring:#72bbaa88;
+      --header:#0f3a33;--header-ink:#fff;--header-muted:#bcd6cd;
+      --warn-bg:#fff7e8;--warn-line:#e0a23c;--warn-ink:#5d4515;
+      --danger:#b42318;--danger-soft:#fdecea;
+      --import:#7a4fd0;--import-soft:#efe8fc;
+      --shadow:0 1px 2px rgb(16 40 34/.06),0 6px 20px rgb(16 40 34/.06);
+      --radius:14px;
+    }
+    @media (prefers-color-scheme:dark){:root{
+      --bg:#0e1412;--surface:#151d1a;--surface-2:#1a2420;--surface-3:#202d28;
+      --ink:#e2ebe7;--muted:#9babA5;--faint:#6f7f79;
+      --line:#25322d;--line-strong:#35463f;
+      --accent:#3db99c;--accent-ink:#04221b;--accent-soft:#163a31;--accent-text:#86dcc6;--ring:#3db99c66;
+      --header:#0a211d;--header-ink:#eaf4f0;--header-muted:#93b3a9;
+      --warn-bg:#2a2215;--warn-line:#b9862f;--warn-ink:#ebd5a6;
+      --danger:#ff8f85;--danger-soft:#3a1d1a;
+      --import:#b493ff;--import-soft:#2a2240;
+      --shadow:0 1px 2px rgb(0 0 0/.3),0 6px 20px rgb(0 0 0/.25);
+    }}
+    *{box-sizing:border-box}
+    html{-webkit-text-size-adjust:100%;text-size-adjust:100%;scroll-behavior:smooth}
+    body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 -apple-system,BlinkMacSystemFont,"PingFang SC","Noto Sans SC","Segoe UI",sans-serif}
+    button,input,textarea{font:inherit;color:inherit}
+    [hidden]{display:none!important}
+    .en{color:var(--muted);font-weight:400}
+
+    /* Header */
+    .topbar{background:var(--header);color:var(--header-ink)}
+    .topbar-inner{max-width:1440px;margin:0 auto;padding:22px 24px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+    .brand{display:flex;align-items:center;gap:14px;min-width:0;flex:1}
+    .brand svg{width:42px;height:42px;flex:none}
+    .title{margin:0;font-size:clamp(20px,2.4vw,26px);letter-spacing:-.02em;line-height:1.25}
+    .title .en{color:var(--header-muted);font-weight:500;font-size:.72em;margin-left:6px}
+    .sub{margin:3px 0 0;color:var(--header-muted);font-size:13px}
+    .stats{display:flex;gap:8px;flex-wrap:wrap}
+    .stat{background:rgb(255 255 255/.08);border:1px solid rgb(255 255 255/.12);border-radius:10px;padding:6px 11px;font-size:12px;color:var(--header-muted);white-space:nowrap}
+    .stat b{color:var(--header-ink);font-size:15px;margin-right:3px;font-variant-numeric:tabular-nums}
+    .stat.import b{color:#d2bcff}
+
+    /* Buttons */
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;border:1px solid transparent;border-radius:9px;padding:9px 14px;font-size:13px;font-weight:650;cursor:pointer;white-space:nowrap;min-height:38px;transition:background .15s,border-color .15s}
+    .btn svg{width:16px;height:16px;flex:none}
+    .btn:focus-visible{outline:3px solid var(--ring);outline-offset:2px}
+    .btn-primary{background:var(--accent);color:var(--accent-ink)}
+    .btn-primary:hover{filter:brightness(1.07)}
+    .btn-primary:disabled{opacity:.45;cursor:not-allowed;filter:none}
+    .btn-ghost{background:var(--surface);border-color:var(--line-strong);color:var(--accent-text)}
+    .btn-ghost:hover{background:var(--accent-soft)}
+    .btn-light{background:#fff;color:#0f3a33}
+    .btn-light:hover{background:#e6f4ef}
+    .btn-danger{background:transparent;border-color:var(--line-strong);color:var(--danger)}
+    .btn-danger:hover{background:var(--danger-soft)}
+    .btn-sm{padding:6px 10px;min-height:32px;font-size:12px}
+    .link-btn{border:0;background:none;color:var(--accent-text);font-size:12px;font-weight:650;cursor:pointer;padding:4px 6px;border-radius:6px}
+    .link-btn:hover{background:var(--accent-soft)}
+
+    /* Notice */
+    .notice{max-width:1440px;margin:16px auto 0;padding:0 24px}
+    .notice details{border:1px solid var(--warn-line);border-left-width:4px;background:var(--warn-bg);color:var(--warn-ink);border-radius:10px;padding:9px 14px;font-size:13px}
+    .notice summary{cursor:pointer;font-weight:650}
+    .notice p{margin:8px 0 2px;line-height:1.6}
+
+    /* Layout */
+    .layout{max-width:1440px;margin:0 auto;padding:16px 24px 32px;display:grid;grid-template-columns:340px minmax(0,1fr);gap:20px;align-items:start}
+    .sidebar{position:sticky;top:16px;max-height:calc(100vh - 32px);overflow:auto;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overscroll-behavior:contain}
+    .sidebar-head{position:sticky;top:0;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:14px 16px 12px;background:var(--surface);border-bottom:1px solid var(--line)}
+    .sidebar-head h2{margin:0;font-size:15px}
+    .sidebar-body{padding:14px 16px 18px;display:grid;gap:14px}
+    .group{border:1px solid var(--line);border-radius:12px;background:var(--surface-2)}
+    .group>summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:11px 13px;font-size:13px;font-weight:700}
+    .group>summary::-webkit-details-marker{display:none}
+    .group>summary .en{flex:1;font-weight:500}
+    .group>summary::after{content:"";width:8px;height:8px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg) translateY(-2px);transition:transform .15s;flex:none}
+    .group[open]>summary::after{transform:rotate(-135deg) translateY(-2px)}
+    .group>summary .count{margin-left:auto;font-size:11px;font-weight:650;color:var(--accent-text);background:var(--accent-soft);border-radius:999px;padding:1px 8px}
+    .group>summary .count:empty{display:none}
+    .group-body{padding:2px 13px 14px;display:grid;gap:12px}
+
+    .field label,.label{display:block;font-size:12px;color:var(--muted);margin:0 0 6px}
+    .field label .en,.label .en{color:var(--faint)}
+    input[type=text],input[type=search],textarea{width:100%;border:1px solid var(--line-strong);border-radius:9px;padding:10px 11px;background:var(--surface);font-size:15px}
+    input:focus,textarea:focus{outline:3px solid var(--ring);border-color:var(--accent)}
+    input[aria-invalid=true]{border-color:var(--danger)}
+    .search-wrap{position:relative}
+    .search-wrap svg{position:absolute;left:11px;top:50%;width:17px;height:17px;transform:translateY(-50%);color:var(--faint);pointer-events:none}
+    .search-wrap input{padding-left:36px}
+    .input-error{display:block;color:var(--danger);font-size:12px;line-height:1.5;margin-top:5px}.input-error:empty{display:none}
+    .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    input[type=range]{width:100%;accent-color:var(--accent);height:26px;margin:0;cursor:pointer}
+    .range-label{display:flex!important;justify-content:space-between;align-items:baseline;gap:6px}
+    .range-label output{color:var(--accent-text);font-weight:700;font-variant-numeric:tabular-nums}
+    .hint{font-size:11px;color:var(--muted);margin:4px 0 0;line-height:1.5}
+
+    /* Segmented scope */
+    .segments{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));padding:3px;background:var(--surface-3);border:1px solid var(--line);border-radius:10px;gap:2px}
+    .segments label{position:relative;min-width:0}
+    .segments input{position:absolute;opacity:0;width:1px;height:1px}
+    .segments span{display:flex;align-items:center;justify-content:center;min-height:34px;padding:4px;font-size:12.5px;color:var(--muted);border-radius:7px;cursor:pointer;text-align:center;line-height:1.2}
+    .segments input:checked+span{background:var(--surface);color:var(--accent-text);font-weight:700;box-shadow:0 1px 3px rgb(0 0 0/.12)}
+    .segments input:focus-visible+span{outline:3px solid var(--ring)}
+    .segments input:disabled+span{opacity:.4;cursor:not-allowed}
+    .segments input[value=U]:checked+span{color:var(--import)}
+
+    /* Choice chips */
+    .choices{display:flex;flex-wrap:wrap;gap:6px}
+    .choice{position:relative}
+    .choice input{position:absolute;opacity:0;pointer-events:none}
+    .choice>span{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line-strong);border-radius:999px;padding:6px 10px;background:var(--surface);font-size:12.5px;line-height:1.2;cursor:pointer;transition:background .12s,border-color .12s;user-select:none}
+    .choice>span:hover{border-color:var(--accent)}
+    .choice small{color:var(--faint);font-size:11px}
+    .choice input:checked+span{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-text);font-weight:650}
+    .choice input:checked+span small{color:var(--accent-text)}
+    .choice input:focus-visible+span{outline:3px solid var(--ring);outline-offset:2px}
+    #colorChoices .choice>span::before{content:"";width:12px;height:12px;border-radius:50%;border:1px solid #0003;background:var(--swatch);flex:none}
+
+    .calculator{border:1px dashed var(--line-strong);border-radius:10px;padding:10px;background:var(--surface)}
+    .calc-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px}
+    .calc-output{font-size:16px;font-weight:750;color:var(--accent-text);font-variant-numeric:tabular-nums}
+
+    /* Results */
+    .results{min-width:0}
+    .toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;box-shadow:var(--shadow);margin-bottom:12px}
+    .result-count{font-size:22px;font-weight:800;color:var(--accent-text);font-variant-numeric:tabular-nums;line-height:1}
+    .result-count small{font-size:12px;font-weight:600;color:var(--muted);margin-left:4px}
+    .chips{display:flex;flex-wrap:wrap;gap:6px;flex:1 1 100%;min-width:0;order:3}
+    .sort-note{order:4}
+    .chip{display:inline-flex;align-items:center;gap:4px;background:var(--surface-3);border:1px solid var(--line);border-radius:999px;padding:3px 4px 3px 10px;font-size:12px;color:var(--ink)}
+    .chip button{border:0;background:none;width:20px;height:20px;border-radius:50%;cursor:pointer;color:var(--muted);line-height:1;font-size:14px}
+    .chip button:hover{background:var(--line-strong);color:var(--ink)}
+    .chips .none{font-size:12px;color:var(--faint)}
+    .toolbar-right{display:flex;align-items:center;gap:10px;margin-left:auto}
+    .sort-toggle{display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;position:relative;white-space:nowrap}
+    .sort-toggle input{position:absolute;opacity:0;width:1px;height:1px}
+    .sort-track{width:36px;height:22px;flex:none;border-radius:20px;background:var(--faint);position:relative;transition:background .15s}
+    .sort-track::after{content:"";position:absolute;width:16px;height:16px;left:3px;top:3px;border-radius:50%;background:#fff;transition:transform .15s}
+    .sort-toggle input:checked+.sort-track{background:var(--accent)}
+    .sort-toggle input:checked+.sort-track::after{transform:translateX(14px)}
+    .sort-toggle input:focus-visible+.sort-track{outline:3px solid var(--ring);outline-offset:2px}
+    .sort-note{flex-basis:100%;margin:0;font-size:11.5px;line-height:1.5;color:var(--muted)}
+
+    .table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);box-shadow:var(--shadow)}
+    .results-table{border-collapse:separate;border-spacing:0;width:100%;min-width:940px;font-size:13px}
+    .results-table th{position:sticky;top:0;z-index:2;background:var(--surface-3);color:var(--muted);font-size:11.5px;font-weight:650;text-align:left;padding:10px 12px;white-space:nowrap;border-bottom:1px solid var(--line-strong)}
+    .results-table th .en{display:block;font-size:10.5px;color:var(--faint)}
+    .results-table td{padding:12px;vertical-align:top;border-bottom:1px solid var(--line);line-height:1.45;font-variant-numeric:tabular-nums}
+    .results-table tbody tr.gem-row:hover td{background:var(--surface-2)}
+    .results-table th:first-child,.results-table td.name-cell{position:sticky;left:0;z-index:1;background:var(--surface)}
+    .results-table th:first-child{z-index:3;background:var(--surface-3)}
+    .results-table tr.is-open td{background:var(--surface-2)}
+    .name-cell{min-width:210px;max-width:260px}
+    .name-en{font-size:15px;font-weight:750;display:block;line-height:1.25}
+    .name-zh{display:block;color:var(--muted);font-size:12.5px;margin-top:2px}
+    .meta{display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin-top:6px}
+    .tag{display:inline-block;border-radius:5px;padding:1px 6px;font-size:10.5px;font-weight:700;letter-spacing:.02em;background:var(--surface-3);color:var(--muted);white-space:nowrap}
+    .tag.a{background:#e3eefb;color:#1f4f86}.tag.b{background:#fbeede;color:#81501a}.tag.u{background:var(--import-soft);color:var(--import)}
+    @media (prefers-color-scheme:dark){.tag.a{background:#1b2a3d;color:#9cc4f2}.tag.b{background:#33261a;color:#efc18a}}
+    .uv{font-size:11px;color:var(--faint);white-space:nowrap}
+    .colour-cell{min-width:142px}
+    .colour-dots{display:flex;flex-wrap:wrap;gap:3px;max-width:150px}
+    .colour-dot{position:relative;width:20px;height:20px;padding:0;border:0;background:transparent;cursor:help;display:flex;align-items:center;justify-content:center}
+    .colour-dot i{display:block;width:16px;height:16px;border:1px solid #0004;border-radius:50%;background:var(--swatch)}
+    .colour-dot span{display:none;position:absolute;left:50%;bottom:calc(100% + 4px);transform:translateX(-50%);z-index:5;background:#183b34;color:#fff;padding:4px 8px;border-radius:5px;font-size:12px;white-space:nowrap;pointer-events:none}
+    .colour-dot:hover span,.colour-dot:focus span{display:block}
+    .colour-dot:focus-visible{outline:2px solid var(--accent);border-radius:50%}
+    .trans-cell{min-width:110px}.trans-cell small{display:block;font-size:11.5px;color:var(--muted);margin-top:2px}
+    .num{white-space:nowrap}
+    .num small{display:block;white-space:normal;color:var(--faint);font-size:11px;max-width:150px}
+    .optics{font-weight:650;letter-spacing:.02em}
+    .match{min-width:96px}
+    .meter{display:grid;grid-template-columns:22px 1fr;align-items:center;gap:6px;font-size:11.5px;color:var(--muted)}
+    .meter+.meter{margin-top:5px}
+    .meter b{font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
+    .meter.hi b{color:var(--accent-text)}
+    .meter.na b{color:var(--faint);font-weight:500}
+    .actions{white-space:nowrap;text-align:right}
+    .icon-btn{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:8px;border:1px solid transparent;background:transparent;color:var(--muted);cursor:pointer;vertical-align:middle}
+    .icon-btn:hover{background:var(--surface-3);color:var(--ink)}
+    .icon-btn:focus-visible{outline:3px solid var(--ring)}
+    .icon-btn svg{width:18px;height:18px}
+    .detail-btn svg{transition:transform .15s}
+    .detail-btn[aria-expanded=true] svg{transform:rotate(180deg)}
+    .detail-btn[aria-expanded=true]{background:var(--accent-soft);color:var(--accent-text)}
+    tr.excluded td{background:var(--surface-2);color:var(--faint);padding-top:7px;padding-bottom:7px}
+    tr.excluded .name-en{font-size:13px;font-weight:600;color:var(--faint);display:inline}
+    .detail-row>td{padding:0!important;background:var(--surface-2)}
+    .gem-details{padding:16px 18px 20px;max-width:1100px}
+    .gem-details h3{margin:0 0 12px;font-size:16px}
+    .gem-details h3 small{color:var(--muted);font-weight:500;margin-left:6px}
+    .gem-details dl{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px;margin:0}
+    .gem-details dl>div{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:9px 11px;min-width:0}
+    .gem-details dl>div.wide{grid-column:1/-1}
+    .gem-details dt{font-size:11.5px;color:var(--muted);font-weight:600}
+    .gem-details dd{margin:4px 0 0;font-size:13.5px;line-height:1.6;overflow-wrap:anywhere;white-space:pre-line}
+    .empty{padding:48px 20px!important;text-align:center;color:var(--muted)}
+    .empty b{display:block;font-size:16px;color:var(--ink);margin-bottom:6px}
+
+    .foot{max-width:1440px;margin:0 auto;padding:0 24px 40px;color:var(--muted);font-size:12px;line-height:1.7}
+    .foot details{border-top:1px solid var(--line);padding-top:14px}
+    .foot summary{cursor:pointer;font-weight:650;color:var(--ink);font-size:13px}
+
+    /* Import dialog */
+    dialog{border:0;border-radius:16px;padding:0;width:min(760px,calc(100vw - 24px));max-height:calc(100vh - 40px);background:var(--surface);color:var(--ink);box-shadow:0 20px 60px rgb(0 0 0/.35)}
+    dialog::backdrop{background:rgb(8 20 17/.55);backdrop-filter:blur(2px)}
+    .dlg{display:flex;flex-direction:column;max-height:calc(100vh - 40px)}
+    .dlg-head{display:flex;align-items:flex-start;gap:12px;padding:18px 20px 12px;border-bottom:1px solid var(--line)}
+    .dlg-head h2{margin:0;font-size:18px}
+    .dlg-head p{margin:4px 0 0;font-size:12.5px;color:var(--muted)}
+    .dlg-body{padding:16px 20px;overflow:auto;display:grid;gap:14px}
+    .dlg-foot{display:flex;justify-content:space-between;gap:10px;padding:12px 20px;border-top:1px solid var(--line);background:var(--surface-2);border-radius:0 0 16px 16px;flex-wrap:wrap}
+    .privacy{display:flex;gap:10px;align-items:flex-start;background:var(--import-soft);border-radius:10px;padding:10px 12px;font-size:12.5px;line-height:1.55}
+    .privacy svg{width:18px;height:18px;flex:none;color:var(--import);margin-top:1px}
+    .drop{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-align:center;border:2px dashed var(--line-strong);border-radius:12px;padding:26px 16px;background:var(--surface-2);cursor:pointer;transition:border-color .15s,background .15s}
+    .drop:hover,.drop.over{border-color:var(--import);background:var(--import-soft)}
+    .drop svg{width:34px;height:34px;color:var(--import)}
+    .drop b{font-size:15px}
+    .drop span{font-size:12px;color:var(--muted)}
+    .drop input{position:absolute;width:1px;height:1px;opacity:0}
+    .drop:focus-within{outline:3px solid var(--ring);outline-offset:2px}
+    .paste textarea{min-height:92px;font:12.5px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;resize:vertical}
+    .paste-row{display:flex;justify-content:flex-end;gap:8px;margin-top:8px;flex-wrap:wrap}
+    .report{border-radius:10px;padding:10px 12px;font-size:12.5px;line-height:1.55}
+    .report.ok{background:var(--accent-soft);color:var(--accent-text)}
+    .report.err{background:var(--danger-soft);color:var(--danger)}
+    .report ul{margin:6px 0 0;padding-left:18px;max-height:140px;overflow:auto}
+    .datasets h3,.schema h3{margin:0 0 8px;font-size:13px}
+    .ds{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:10px;padding:9px 11px;background:var(--surface)}
+    .ds+.ds{margin-top:6px}
+    .ds-icon{width:30px;height:30px;border-radius:8px;background:var(--import-soft);color:var(--import);display:grid;place-items:center;flex:none}
+    .ds-icon svg{width:16px;height:16px}
+    .ds-main{flex:1;min-width:0}
+    .ds-main b{display:block;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .ds-main small{color:var(--muted);font-size:11.5px}
+    .ds-empty{font-size:12.5px;color:var(--faint);border:1px dashed var(--line-strong);border-radius:10px;padding:12px;text-align:center}
+    .schema summary{cursor:pointer;font-size:13px;font-weight:650;color:var(--accent-text)}
+    .schema table{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px}
+    .schema th,.schema td{text-align:left;border-bottom:1px solid var(--line);padding:6px 6px;vertical-align:top}
+    .schema code{font-size:11.5px;background:var(--surface-3);padding:1px 5px;border-radius:4px}
+    .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:#183b34;color:#fff;padding:10px 16px;border-radius:10px;font-size:13px;box-shadow:var(--shadow);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:50}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+
+    /* Tablet / phone */
+    /* Identification block in gem details */
+    .ident{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:10px;padding:10px 12px 8px;margin:0 0 12px}
+    .ident h4{margin:0 0 6px;font-size:13px}
+    .ident h4 span{color:var(--muted);font-weight:500;margin-left:4px}
+    .gem-details .ident dl{display:block;margin:0}
+    .gem-details .ident .ident-row{display:grid;grid-template-columns:96px minmax(0,1fr);gap:10px;padding:7px 0;border:0;border-top:1px dashed var(--line);background:none;border-radius:0}
+    .gem-details .ident .ident-row:first-child{border-top:0}
+    .ident-row dt{display:flex;flex-direction:column;line-height:1.25}
+    .ident-row dt b{font-size:12.5px;color:var(--accent-text)}
+    .ident-row dt small{font-size:11px;color:var(--muted);font-weight:500}
+    .gem-details .ident-row dd{margin:0;font-size:13.5px;line-height:1.55;overflow-wrap:anywhere;white-space:normal}
+    .ident-zh{display:block}
+    .ident-zh .sep{color:var(--faint)}
+    .ident-en{display:block;font-size:12px;color:var(--muted)}
+    .ident-na{color:var(--faint)}
+    .ident-row.tn dt b{color:var(--import)}
+    .ident-note{margin:6px 0 2px;font-size:12px;color:var(--warn-ink);background:var(--warn-bg);border-radius:6px;padding:5px 8px}
+    @media (max-width:760px){.gem-details .ident .ident-row{grid-template-columns:74px minmax(0,1fr);gap:8px;padding:7px 0}}
+
+    /* Manual entry form */
+    .gem-form{display:grid;gap:12px;border:1px solid var(--line);border-radius:12px;background:var(--surface-2);padding:14px}
+    .gem-form.editing{border-color:var(--import);box-shadow:0 0 0 3px var(--import-soft)}
+    .form-title{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+    .form-title b{font-size:14px}
+    .gem-form.editing .form-title b{color:var(--import)}
+    .four{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+    .seg3{grid-template-columns:repeat(3,minmax(0,1fr))}
+    .gem-form .segments input:checked+span{color:var(--accent-text)}
+    .more>summary{cursor:pointer;font-size:13px;font-weight:650;color:var(--accent-text)}
+    .form-actions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+    .swatch-choices .choice>span::before{content:"";width:12px;height:12px;border-radius:50%;border:1px solid #0003;background:var(--swatch);flex:none}
+    .entry-meta{font-variant-numeric:tabular-nums}
+    .ds .icon-btn{width:32px;height:32px}
+    .ds.is-editing{border-color:var(--import)}
+    .bulk{border-top:1px solid var(--line);padding-top:12px}
+    @media (max-width:560px){.four{grid-template-columns:repeat(2,minmax(0,1fr))}.form-actions .btn{flex:1}}
+
+    /* Horizontal-scroll affordance for the table */
+    .table-shell{position:relative;min-height:0}
+    .table-shell::before,.table-shell::after{content:"";position:absolute;top:1px;bottom:1px;width:22px;pointer-events:none;z-index:4;opacity:0;transition:opacity .2s}
+    .table-shell::before{left:1px;border-radius:var(--radius) 0 0 var(--radius);background:linear-gradient(90deg,rgb(0 0 0/.12),transparent)}
+    .table-shell::after{right:1px;border-radius:0 var(--radius) var(--radius) 0;background:linear-gradient(-90deg,rgb(0 0 0/.12),transparent)}
+    .table-shell.can-left::before,.table-shell.can-right::after{opacity:1}
+    .swipe-hint{position:absolute;right:12px;top:56px;z-index:5;display:none;align-items:center;gap:6px;background:#183b34;color:#fff;font-size:12px;border-radius:999px;padding:6px 12px;box-shadow:var(--shadow);pointer-events:none;animation:nudge 1.6s ease-in-out infinite}
+    .table-shell.can-right:not(.scrolled) .swipe-hint{display:inline-flex}
+    @keyframes nudge{0%,100%{transform:translateX(0)}50%{transform:translateX(-6px)}}
+    .table-wrap{scrollbar-width:thin}
+
+    /* Mobile-only pieces, hidden on desktop */
+    .sheet-handle,.sheet-close,.sheet-foot,.sheet-backdrop,.mobile-bar,.to-top{display:none}
+
+    /* Desktop: filter pane and results pane scroll independently; table header stays pinned */
+    @media (min-width:981px){
+      .sidebar{max-height:calc(100dvh - 32px)}
+      .results{position:sticky;top:16px;height:calc(100vh - 32px);height:calc(100dvh - 32px);display:flex;flex-direction:column}
+      .toolbar{flex:none}
+      .table-shell{flex:1;display:flex}
+      .table-wrap{flex:1;overflow:auto}
+    }
+
+    /* Tablet & phone: filters live in a bottom sheet */
+    @media (max-width:980px){
+      .layout{grid-template-columns:1fr;padding:12px 12px calc(96px + env(safe-area-inset-bottom))}
+      .notice{padding:0 12px}
+      .topbar-inner{padding:16px max(16px,env(safe-area-inset-left))}
+      .foot{padding:0 16px calc(100px + env(safe-area-inset-bottom))}
+      .sidebar{position:fixed;left:0;right:0;bottom:0;top:auto;z-index:41;max-height:88vh;max-height:88dvh;overflow:auto;overscroll-behavior:contain;border-radius:20px 20px 0 0;border-bottom:0;transform:translateY(105%);transition:transform .28s cubic-bezier(.2,.8,.2,1),visibility 0s linear .28s;visibility:hidden;box-shadow:0 -10px 40px rgb(0 0 0/.25)}
+      .sidebar.open{transform:translateY(0);visibility:visible;transition:transform .28s cubic-bezier(.2,.8,.2,1),visibility 0s}
+      .sidebar.dragging{transition:none}
+      .sidebar-head{position:sticky;top:0;padding-top:20px;touch-action:none;cursor:grab}
+      .sheet-handle{display:block;position:absolute;top:7px;left:50%;width:40px;height:5px;margin-left:-20px;border-radius:9px;background:var(--line-strong)}
+      .sheet-close{display:inline-flex}
+      .sidebar-head .head-actions{display:flex;align-items:center;gap:2px}
+      .sheet-foot{display:block;position:sticky;bottom:0;z-index:2;padding:10px 16px calc(10px + env(safe-area-inset-bottom));background:var(--surface);border-top:1px solid var(--line)}
+      .sheet-foot .btn{width:100%;min-height:48px;font-size:15px}
+      .sheet-backdrop{display:block;position:fixed;inset:0;z-index:40;background:rgb(8 20 17/.5);opacity:0;pointer-events:none;transition:opacity .25s}
+      .sheet-backdrop.show{opacity:1;pointer-events:auto}
+      html.sheet-open,html.sheet-open body{overflow:hidden}
+      .mobile-bar{display:flex;position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:30;gap:8px;transition:transform .25s,opacity .25s}
+      html.sheet-open .mobile-bar{opacity:0;transform:translateY(20px);pointer-events:none}
+      .mobile-bar .btn{min-height:50px;font-size:15px;border-radius:14px;box-shadow:0 8px 24px rgb(0 0 0/.25)}
+      .mobile-bar .open-filters{flex:1}
+      .mobile-bar .open-filters .badge{background:var(--accent-ink);color:var(--accent);border-radius:999px;font-size:12px;min-width:20px;height:20px;padding:0 6px;display:inline-grid;place-items:center}
+      .mobile-bar .open-filters .badge:empty{display:none}
+      .mobile-bar .bar-count{background:var(--surface);color:var(--accent-text);border:1px solid var(--line-strong)}
+      .to-top{display:inline-flex;position:fixed;right:16px;bottom:calc(76px + env(safe-area-inset-bottom));z-index:29;width:44px;height:44px;border-radius:50%;border:1px solid var(--line-strong);background:var(--surface);color:var(--ink);align-items:center;justify-content:center;box-shadow:var(--shadow);cursor:pointer;opacity:0;transform:translateY(10px);pointer-events:none;transition:opacity .2s,transform .2s}
+      .to-top.show{opacity:1;transform:none;pointer-events:auto}
+      .to-top svg{width:20px;height:20px}
+      input[type=text],input[type=search],textarea{font-size:16px}
+      .choice>span{min-height:40px;padding:8px 12px;font-size:14px}
+      .segments span{min-height:42px}
+      .icon-btn{width:40px;height:40px}
+      .colour-dot{width:30px;height:30px}
+      .colour-dot i{width:20px;height:20px}
+    }
+    @media (max-width:760px){
+      body{font-size:15px}
+      .stats{width:100%}
+      .topbar .btn{width:100%}
+      .choice>span{padding:8px 11px;font-size:13.5px}
+      .toolbar-right{margin-left:0;width:100%;justify-content:space-between;flex-wrap:wrap;gap:8px}
+      .sort-toggle .en{display:none}
+      .sort-note{font-size:11px}
+      .table-wrap{border:0;background:transparent;box-shadow:none;overflow:visible}
+      .results-table{min-width:0;display:block}
+      .results-table thead{display:none}
+      .results-table tbody{display:grid;gap:10px}
+      .results-table tr{display:grid;grid-template-columns:1fr 1fr;gap:0;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden;box-shadow:var(--shadow)}
+      .results-table td{display:block;border:0;padding:8px 12px;min-width:0}
+      .results-table td[data-label]::before{content:attr(data-label);display:block;font-size:10.5px;color:var(--faint);font-weight:650;margin-bottom:2px}
+      .results-table td.name-cell{position:static;grid-column:1/-1;max-width:none;padding:12px 44px 4px 12px;background:transparent}
+      .results-table tr.gem-row{position:relative}
+      .results-table td.actions{position:absolute;top:6px;right:6px;padding:0;display:flex;flex-direction:column}
+      .results-table td.colour-cell,.results-table td.match{grid-column:1/-1}
+      .results-table td.match .meter{grid-template-columns:22px auto;display:inline-grid;margin:0 14px 0 0}
+      .results-table tr.detail-row,.results-table tr.excluded,.results-table tr.empty-row{display:block}
+      .results-table tr.detail-row{margin-top:-12px;border-top:0;border-radius:0 0 12px 12px}
+      .results-table tr.excluded td{display:flex;align-items:center;gap:8px;padding:6px 10px}
+      .results-table tr.excluded td.actions{position:static;flex-direction:row;margin-left:auto}
+      .colour-dots{max-width:none}
+      .gem-details{padding:12px}
+      .gem-details dl{grid-template-columns:1fr 1fr;gap:6px}
+      .gem-details dl>div{padding:7px 9px}
+      .gem-details dd{font-size:13px}
+      .dlg-body{padding:14px}
+    }
+    @media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <svg viewBox="0 0 64 64" aria-hidden="true"><path fill="#3db99c" d="M32 4 56 28 32 60 8 28z"/><path fill="#fff" d="m32 14 12 14-12 22-12-22z"/></svg>
+        <div>
+          <h1 class="title">宝石物性检索<span class="en" lang="en">Gem Property Finder</span></h1>
+          <p class="sub">按折射率、比重、颜色与光性筛选候选材料 · GIA Chart A + B</p>
+        </div>
+      </div>
+      <div class="stats" aria-label="数据统计 / Data stats">
+        <span class="stat"><b id="statA">0</b>Chart A</span>
+        <span class="stat"><b id="statB">0</b>Chart B</span>
+        <span class="stat import"><b id="statU">0</b>我的 / Mine</span>
+      </div>
+      <button class="btn btn-light" id="openImport" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+        添加我的宝石 <span class="en" lang="en" style="color:inherit;opacity:.7">Add gem</span>
+      </button>
+    </div>
+  </header>
+
+  <div class="notice">
+    <details>
+      <summary>使用须知 / Notice — 筛选结果仅为候选范围，不能替代完整鉴定</summary>
+      <p>本工具按 GIA Gem Property Chart A、B（1992）照片建立，供个人学习与课堂使用。请结合显微镜、光谱、UV、内含物等复核。 / Built from GIA Gem Property Chart A and B (1992) photos for personal classroom reference. Results are candidates only and require full gemological confirmation.</p>
+    </details>
+  </div>
+
+  <div class="layout">
+    <aside class="sidebar" id="filterSheet" aria-label="筛选条件 / Filters" tabindex="-1">
+      <div class="sidebar-head" id="sheetHead">
+        <span class="sheet-handle" aria-hidden="true"></span>
+        <h2>筛选条件 <span class="en" lang="en">Filters</span></h2>
+        <div class="head-actions">
+          <button class="link-btn" id="resetFilters" type="button">重置 / Reset</button>
+          <button class="icon-btn sheet-close" id="closeSheet" type="button" aria-label="关闭筛选 / Close filters"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+        </div>
+      </div>
+      <div class="sidebar-body">
+        <div class="field">
+          <label for="q">名称或别名 <span class="en">Name or alias</span></label>
+          <div class="search-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            <input id="q" type="search" placeholder="翡翠、emerald、garnet…" autocomplete="off">
+          </div>
+        </div>
+
+        <fieldset class="field" style="border:0;margin:0;padding:0;min-width:0">
+          <legend class="label">数据范围 <span class="en">Scope</span></legend>
+          <div class="segments">
+            <label><input type="radio" name="chart" value="all" checked><span>全部<br><small>All</small></span></label>
+            <label><input type="radio" name="chart" value="A"><span>Chart A</span></label>
+            <label><input type="radio" name="chart" value="B"><span>Chart B</span></label>
+            <label><input type="radio" name="chart" value="U" id="scopeU"><span>我的<br><small>Mine</small></span></label>
+          </div>
+        </fieldset>
+
+        <details class="group" open>
+          <summary>RI / SG 测量 <span class="en">Measurements</span><span class="count" id="cntNum"></span></summary>
+          <div class="group-body">
+            <div class="two">
+              <div class="field"><label for="ri">测得 RI</label><input id="ri" type="text" inputmode="decimal" aria-describedby="riError" placeholder="1.620" autocomplete="off"></div>
+              <div class="field"><label for="sg">测得 SG</label><input id="sg" type="text" inputmode="decimal" aria-describedby="sgError" placeholder="3.34" autocomplete="off"></div>
+            </div>
+            <span id="riError" class="input-error" role="status"></span><span id="sgError" class="input-error" role="status"></span>
+            <div class="field"><label class="range-label" for="riTol"><span>RI 误差 <span class="en">tolerance</span></span><output id="riTolValue">± 0.000</output></label><input id="riTol" type="range" min="0" max="0.300" step="0.001" value="0"></div>
+            <div class="field"><label class="range-label" for="sgTol"><span>SG 误差 <span class="en">tolerance</span></span><output id="sgTolValue">± 0.000</output></label><input id="sgTol" type="range" min="0" max="0.50" step="0.001" value="0"><p class="hint">误差叠加在原表 Range 之上 / Added on top of the source range.</p></div>
+            <div class="calculator">
+              <span class="label">SG 静水称重计算 <span class="en">Hydrostatic SG</span></span>
+              <div class="two">
+                <div class="field"><label for="airWeight">空气中重量 <span class="en">Air</span></label><input id="airWeight" type="text" inputmode="decimal" placeholder="3.42" autocomplete="off"></div>
+                <div class="field"><label for="waterWeight">水中重量 <span class="en">Water</span></label><input id="waterWeight" type="text" inputmode="decimal" placeholder="2.40" autocomplete="off"></div>
+              </div>
+              <div class="calc-row"><span class="calc-output" id="sgCalcResult">SG —</span><button class="btn btn-primary btn-sm" id="useSg" type="button" disabled>填入 SG / Use</button></div>
+            </div>
+          </div>
+        </details>
+
+        <details class="group" open>
+          <summary>颜色 <span class="en">Colour</span><span class="count" id="cntColor"></span></summary>
+          <div class="group-body"><div class="choices" id="colorChoices">
+            <label class="choice" style="--swatch:linear-gradient(135deg,#fff 40%,#d7e9ee 55%,#fff 70%)"><input name="color" value="无色" type="checkbox"><span>无色 <small lang="en">Colourless</small></span></label>
+            <label class="choice" style="--swatch:#98358c"><input name="color" value="紫" type="checkbox"><span>紫 <small lang="en">Purple</small></span></label>
+            <label class="choice" style="--swatch:#c83246"><input name="color" value="红" type="checkbox"><span>红 <small lang="en">Red</small></span></label>
+            <label class="choice" style="--swatch:#ef8e2e"><input name="color" value="橙" type="checkbox"><span>橙 <small lang="en">Orange</small></span></label>
+            <label class="choice" style="--swatch:#ebcf32"><input name="color" value="黄" type="checkbox"><span>黄 <small lang="en">Yellow</small></span></label>
+            <label class="choice" style="--swatch:#349166"><input name="color" value="绿" type="checkbox"><span>绿 <small lang="en">Green</small></span></label>
+            <label class="choice" style="--swatch:#3988cd"><input name="color" value="蓝" type="checkbox"><span>蓝 <small lang="en">Blue</small></span></label>
+            <label class="choice" style="--swatch:#6560b6"><input name="color" value="蓝紫" type="checkbox"><span>蓝紫 <small lang="en">Violet</small></span></label>
+            <label class="choice" style="--swatch:#8b5940"><input name="color" value="褐" type="checkbox"><span>褐 <small lang="en">Brown</small></span></label>
+            <label class="choice" style="--swatch:#fff"><input name="color" value="白" type="checkbox"><span>白 <small lang="en">White</small></span></label>
+            <label class="choice" style="--swatch:#a7abad"><input name="color" value="灰" type="checkbox"><span>灰 <small lang="en">Gray</small></span></label>
+            <label class="choice" style="--swatch:#2c3035"><input name="color" value="黑" type="checkbox"><span>黑 <small lang="en">Black</small></span></label>
+          </div></div>
+        </details>
+
+        <details class="group" open>
+          <summary>光性与荧光 <span class="en">Optics &amp; UV</span><span class="count" id="cntOptic"></span></summary>
+          <div class="group-body">
+            <div class="choices" id="opticChoices">
+              <label class="choice"><input name="optic" value="SR" type="checkbox"><span>SR 单折射</span></label>
+              <label class="choice"><input name="optic" value="DR" type="checkbox"><span>DR 双折射</span></label>
+              <label class="choice"><input name="optic" value="ADR" type="checkbox"><span>ADR 异常双折射</span></label>
+              <label class="choice"><input name="optic" value="AGG" type="checkbox"><span>AGG 集合体</span></label>
+            </div>
+            <div>
+              <span class="label">荧光 <span class="en">Fluorescence</span></span>
+              <div class="choices" id="uvChoices">
+                <label class="choice"><input name="uv" value="LW" type="checkbox"><span>LW 长波</span></label>
+                <label class="choice"><input name="uv" value="SW" type="checkbox"><span>SW 短波</span></label>
+              </div>
+              <p class="hint">按手动校对筛选：✓ 有，— 无；双选匹配任一波段。ADR 按 SR 检索。</p>
+            </div>
+          </div>
+        </details>
+
+        <details class="group" open>
+          <summary>透明度 <span class="en">Transparency</span><span class="count" id="cntTrans"></span></summary>
+          <div class="group-body"><div class="choices">
+            <label class="choice"><input name="trans" value="Tp" type="checkbox"><span>TP 透明</span></label>
+            <label class="choice"><input name="trans" value="S-Tp" type="checkbox"><span>STP 亚透明</span></label>
+            <label class="choice"><input name="trans" value="Tl" type="checkbox"><span>TL 半透明</span></label>
+            <label class="choice"><input name="trans" value="S-Tl" type="checkbox"><span>STL 微透明</span></label>
+            <label class="choice"><input name="trans" value="O" type="checkbox"><span>OP 不透明</span></label>
+          </div></div>
+        </details>
+      </div>
+      <div class="sheet-foot"><button class="btn btn-primary" id="sheetDone" type="button">查看 <span id="sheetCount">0</span> 个结果 / Show results</button></div>
+    </aside>
+    <div class="sheet-backdrop" id="sheetBackdrop"></div>
+
+    <section class="results" id="resultsSection" aria-label="结果 / Results">
+      <div class="toolbar">
+        <div class="result-count" id="resultCount" aria-live="polite">0<small>个候选 / candidates</small></div>
+        <div class="chips" id="chips"></div>
+        <div class="toolbar-right">
+          <button class="btn btn-ghost btn-sm" id="restoreAll" type="button" hidden>恢复已隐藏 / Restore</button>
+          <label class="sort-toggle"><input id="sortByMatch" type="checkbox" role="switch" checked aria-describedby="sortNote"><span class="sort-track" aria-hidden="true"></span><span>按匹配排序 <span class="en">Sort by match</span></span></label>
+        </div>
+        <p class="sort-note" id="sortNote">按 RI、SG 与标称值的相对偏差排序（区间取中点，独立读数取最近值）；百分比不是鉴定正确率。拼合石始终排在最后。</p>
+      </div>
+      <div class="table-shell" id="tableShell">
+        <div class="table-wrap" id="tableWrap"><table class="results-table" id="results"></table></div>
+        <span class="swipe-hint" aria-hidden="true">← 左右滑动查看更多 / Swipe</span>
+      </div>
+    </section>
+  </div>
+
+  <div class="mobile-bar">
+    <button class="btn btn-primary open-filters" id="openSheet" type="button" aria-controls="filterSheet" aria-expanded="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
+      筛选条件 <span class="badge" id="filterBadge"></span>
+    </button>
+    <button class="btn bar-count" id="barCount" type="button" aria-label="回到结果顶部 / Results top"><span id="jumpCount">0</span>&nbsp;个结果</button>
+  </div>
+  <button class="to-top" id="toTop" type="button" aria-label="回到顶部 / Back to top"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 15 6-6 6 6"/></svg></button>
+
+  <footer class="foot">
+    <details>
+      <summary>数据来源与说明 / Sources &amp; notes</summary>
+      <p>来源 / Source：GIA Gem Property Chart A、B，© 1992 The Gemological Institute of America。Chart A 64 项，Chart B 保留 39 项（涂黑名称的 24 项已排除）。英文保留原表转录，中文为辅助译文；Chlorastrolite、Saussurite、Prosopite 的中文名待核。编号按各表原始行序保留，不因筛选重新编号。</p>
+      <p>点测及缺失值：只有点测 RI 的材料按各独立读数及原表 Range 匹配，不连成区间。原表未提供 RI 数值的材料不因 RI 被排除，并明确标为未知。</p>
+      <p>筛选：RI、SG 先计入原表 Range，再叠加独立的测量误差 ±。颜色包括常见色、少见色及修饰色；保留原表 P（Purple，紫）与 V（Violet，蓝紫）的区分。选择 ADR 时按 SR 检索；拼合石原表为 Any，不因数值或光性被排除。</p>
+      <p>光谱星号：*** 几乎总能发现；** 较少发现；* 有时发现，不一定具诊断性。空白表示未发现或不具诊断性。</p>
+      <p>导入数据：只保存在当前浏览器标签页（sessionStorage），关闭标签页即清除，不会上传到任何服务器。缺失的字段不作为排除条件。</p>
+      <p>安全说明：备注中的热针、酸液、溶剂、重液及牙齿接触是原表历史描述，不是操作建议。单一候选匹配不等于鉴定结论。</p>
+    </details>
+  </footer>
+
+  <dialog id="importDialog" aria-labelledby="importTitle">
+    <div class="dlg">
+      <div class="dlg-head">
+        <div style="flex:1">
+          <h2 id="importTitle">我的宝石 <span class="en" lang="en">My gems</span></h2>
+          <p>手动录入自己的宝石记录，会和 Chart A / B 一起筛选和排序。只保存在当前标签页，不会上传。</p>
+        </div>
+        <button class="icon-btn" id="closeImport" type="button" aria-label="关闭 / Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+      </div>
+      <div class="dlg-body">
+        <form class="gem-form" id="gemForm" novalidate autocomplete="off">
+          <div class="form-title">
+            <b id="formMode">新增一条 / New entry</b>
+            <button class="link-btn" id="fillFromFilters" type="button">↧ 用当前筛选值填入</button>
+          </div>
+          <div class="two">
+            <div class="field"><label for="fZh">中文名 <span class="en">Chinese</span></label><input id="fZh" type="text" placeholder="例如：坦桑石"></div>
+            <div class="field"><label for="fEn">英文名 <span class="en">English</span></label><input id="fEn" type="text" placeholder="e.g. Tanzanite"></div>
+          </div>
+          <div class="four">
+            <div class="field"><label for="fRi">RI</label><input id="fRi" type="text" inputmode="decimal" placeholder="1.691-1.700"></div>
+            <div class="field"><label for="fRiRange">RI ± <span class="en">可空</span></label><input id="fRiRange" type="text" inputmode="decimal" placeholder="0.005"></div>
+            <div class="field"><label for="fSg">SG</label><input id="fSg" type="text" inputmode="decimal" placeholder="3.35"></div>
+            <div class="field"><label for="fSgRange">SG ± <span class="en">可空</span></label><input id="fSgRange" type="text" inputmode="decimal" placeholder="0.02"></div>
+          </div>
+          <p class="hint" style="margin-top:-6px">RI / SG 可填单值（1.544）、区间（1.544-1.553）或多个读数（1.76, 1.77）；留空则不参与数值筛选。</p>
+          <div class="field"><span class="label">光性 <span class="en">Optic</span></span><div class="choices">
+            <label class="choice"><input name="fOptic" value="SR" type="checkbox"><span>SR 单折射</span></label>
+            <label class="choice"><input name="fOptic" value="DR" type="checkbox"><span>DR 双折射</span></label>
+            <label class="choice"><input name="fOptic" value="ADR" type="checkbox"><span>ADR 异常</span></label>
+            <label class="choice"><input name="fOptic" value="AGG" type="checkbox"><span>AGG 集合体</span></label>
+          </div></div>
+          <div class="field"><span class="label">颜色 <span class="en">Colour</span></span><div class="choices swatch-choices" id="fColors"></div></div>
+          <div class="field"><span class="label">透明度 <span class="en">可多选，按范围</span></span><div class="choices">
+            <label class="choice"><input name="fTrans" value="TP" type="checkbox"><span>TP 透明</span></label>
+            <label class="choice"><input name="fTrans" value="STP" type="checkbox"><span>STP 亚透明</span></label>
+            <label class="choice"><input name="fTrans" value="TL" type="checkbox"><span>TL 半透明</span></label>
+            <label class="choice"><input name="fTrans" value="STL" type="checkbox"><span>STL 微透明</span></label>
+            <label class="choice"><input name="fTrans" value="OP" type="checkbox"><span>OP 不透明</span></label>
+          </div></div>
+          <div class="two">
+            <div class="field"><span class="label">LW 长波荧光</span><div class="segments seg3">
+              <label><input type="radio" name="fLw" value="" checked><span>未知</span></label>
+              <label><input type="radio" name="fLw" value="Y"><span>有</span></label>
+              <label><input type="radio" name="fLw" value="N"><span>无</span></label>
+            </div></div>
+            <div class="field"><span class="label">SW 短波荧光</span><div class="segments seg3">
+              <label><input type="radio" name="fSw" value="" checked><span>未知</span></label>
+              <label><input type="radio" name="fSw" value="Y"><span>有</span></label>
+              <label><input type="radio" name="fSw" value="N"><span>无</span></label>
+            </div></div>
+          </div>
+          <details class="more">
+            <summary>更多信息（可选）<span class="en">More</span></summary>
+            <div class="two" style="margin-top:10px">
+              <div class="field"><label for="fHard">硬度 <span class="en">Hardness</span></label><input id="fHard" type="text" placeholder="6.5"></div>
+              <div class="field"><label for="fBiref">双折射率 <span class="en">Biref.</span></label><input id="fBiref" type="text" inputmode="decimal" placeholder="0.009"></div>
+            </div>
+            <div class="field" style="margin-top:10px"><label for="fAliases">别名 / 搜索关键词 <span class="en">Aliases</span></label><input id="fAliases" type="text" placeholder="zoisite 黝帘石"></div>
+            <div class="field" style="margin-top:10px"><label for="fComments">备注 <span class="en">Notes</span></label><textarea id="fComments" rows="2" placeholder="内含物、光谱、来源等"></textarea></div>
+            <span class="label" style="margin-top:12px">鉴定分类 <span class="en">Identification</span></span>
+            <div class="two">
+              <div class="field"><label for="fIdGroup">族 <span class="en">Group</span></label><input id="fIdGroup" type="text" placeholder="石榴石族"></div>
+              <div class="field"><label for="fIdSeries">系列 <span class="en">Series</span></label><input id="fIdSeries" type="text" placeholder="钙系石榴石"></div>
+              <div class="field"><label for="fIdSpecies">种 <span class="en">Species</span></label><input id="fIdSpecies" type="text" placeholder="黝帘石"></div>
+              <div class="field"><label for="fIdVariety">变种 <span class="en">Variety</span></label><input id="fIdVariety" type="text" placeholder="坦桑石"></div>
+            </div>
+            <div class="field" style="margin-top:10px"><label for="fIdTn">商业名 <span class="en">Trade name (TN)</span></label><input id="fIdTn" type="text" placeholder="例如：Paraíba、Swiss blue"></div>
+          </details>
+          <span class="input-error" id="formError" role="alert"></span>
+          <div class="form-actions">
+            <button class="btn btn-ghost" id="cancelEdit" type="button" hidden>取消编辑 / Cancel</button>
+            <button class="btn btn-ghost" id="clearForm" type="button">清空 / Clear</button>
+            <button class="btn btn-primary" id="saveGem" type="submit">保存 / Save</button>
+          </div>
+        </form>
+
+        <div class="datasets">
+          <h3>已录入 <span class="en">Saved entries</span></h3>
+          <div id="datasetList"></div>
+        </div>
+
+        <details class="schema bulk">
+          <summary>批量导入文件（可选）/ Bulk import</summary>
+          <div style="display:grid;gap:12px;margin-top:10px">
+            <label class="drop" id="dropZone">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 18a4.5 4.5 0 0 1-.6-8.96A6 6 0 0 1 18 8.5a4 4 0 0 1-.5 7.97"/><path d="M12 12v9m0-9-3 3m3-3 3 3"/></svg>
+              <b>拖放或选择 CSV / JSON 文件</b>
+              <span>首行为表头，列名如 en, zh, ri, sg, optic, colors…</span>
+              <input type="file" id="fileInput" accept=".csv,.tsv,.txt,.json,text/csv,application/json" multiple>
+            </label>
+            <div class="paste">
+              <label class="label" for="pasteBox">或粘贴表格内容 <span class="en">Paste rows</span></label>
+              <textarea id="pasteBox" placeholder="en,zh,ri,sg,optic,colors&#10;Tanzanite,坦桑石,1.691-1.700,3.35,DR,蓝 蓝紫"></textarea>
+              <div class="paste-row">
+                <button class="btn btn-ghost btn-sm" id="downloadTemplate" type="button">下载 CSV 模板</button>
+                <button class="btn btn-ghost btn-sm" id="fillSample" type="button">填入示例</button>
+                <button class="btn btn-primary btn-sm" id="importPaste" type="button">解析并导入</button>
+              </div>
+            </div>
+            <div id="importReport" hidden></div>
+          </div>
+        </details>
+      </div>
+      <div class="dlg-foot">
+        <button class="btn btn-danger btn-sm" id="clearImports" type="button">清空全部 / Clear all</button>
+        <button class="btn btn-primary" id="doneImport" type="button">完成 / Done</button>
+      </div>
+    </div>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="gem-data.js"></script>
+  <script src="chart-b-source.js"></script>
+  <script src="chart-b-data.js"></script>
+  <script src="base-rows.js"></script>
+  <script src="review-model.js"></script>
+  <script src="review-overrides.js"></script>
+  <script src="identification-data.js"></script>
+  <script>
+  'use strict';
+  const $=id=>document.getElementById(id);
+  const escapeHtml=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const pairText=p=>p[0]===p[1]?p[0]:p[0]+' / '+p[1];
+  const sourceBlank=pairText(chartVocabulary.blank);
+  const NA=['Not provided','未提供'];
+  const fmt=(a,b,d=3)=>a==null?'—':a===b?a.toFixed(d):`${a.toFixed(d)}–${b.toFixed(d)}`;
+
+  const COLOR_ORDER=['无色','紫','红','橙','黄','绿','蓝','蓝紫','褐','白','灰','黑'];
+  const colorEnglish={无色:'Colourless',红:'Red',蓝紫:'Violet',橙:'Orange',黄:'Yellow',绿:'Green',蓝:'Blue',紫:'Purple',褐:'Brown',黑:'Black',白:'White',灰:'Gray'};
+  const swatches={无色:'linear-gradient(135deg,#fff 40%,#d7e9ee 55%,#fff 70%)',红:'#c83246',紫:'#98358c',橙:'#ef8e2e',黄:'#ebcf32',绿:'#349166',蓝:'#3988cd',蓝紫:'#6560b6',褐:'#8b5940',黑:'#2c3035',白:'#fff',灰:'#a7abad'};
+  const systemEnglish={六方晶系:'Hexagonal',四方晶系:'Tetragonal',立方晶系:'Cubic',斜方晶系:'Orthorhombic',单斜晶系:'Monoclinic',三斜晶系:'Triclinic',无定形:'Amorphous',有机集合体:'Organic aggregate',隐晶质集合体:'Cryptocrystalline aggregate','岩石／集合体':'Rock / aggregate',多材料:'Composite material'};
+  const transWords={Tp:'透明 / Transparent','S-Tp':'亚透明 / Semitransparent',Tl:'半透明 / Translucent','S-Tl':'微透明 / Semitranslucent',O:'不透明 / Opaque'};
+  const transOrder=['Tp','S-Tp','Tl','S-Tl','O'];
+  const transLabel=v=>v.split('–').map(t=>({Tp:'TP','S-Tp':'STP',Tl:'TL','S-Tl':'STL',O:'OP'}[t]||t)).join('–');
+  const axisWords={'U+':'一轴晶正光性 / Uniaxial positive','U−':'一轴晶负光性 / Uniaxial negative','U±':'一轴晶正或负光性 / Uniaxial positive or negative','B+':'二轴晶正光性 / Biaxial positive','B−':'二轴晶负光性 / Biaxial negative','B±':'二轴晶正或负光性 / Biaxial positive or negative'};
+  const pleoWords={'2':'二色性 / Dichroic','3':'三色性 / Trichroic',S:'强 / Strong',M:'中等 / Moderate',W:'弱 / Weak'};
+  const opticWords={SR:'SR 单折射 / Singly refractive',DR:'DR 双折射 / Doubly refractive',ADR:'ADR 异常双折射 / Anomalous DR',AGG:'AGG 集合体 / Aggregate'};
+  const variation=(p,m,d=3)=>p===0&&m===0?sourceBlank:p===m?'± '+p.toFixed(d):'+'+p.toFixed(d)+' / −'+m.toFixed(d);
+  const intervalText=iv=>iv===null?'任意 / Any':iv.map(([a,b])=>fmt(a,b)).join('；或 ');
+
+  function transparencyMatches(source,selected){
+    if(!selected.length||!source)return true;
+    const b=source.split('–').map(t=>transOrder.indexOf(t));
+    return selected.some(t=>{const i=transOrder.indexOf(t);return i>=b[0]&&i<=b[b.length-1]});
+  }
+  // Imported rows may have partially-known UV bands; base rows use the review model.
+  const bandsOf=d=>d.importedUv||ReviewModel.uvBands(d);
+  const uvMatches=(d,sel)=>!sel.length||sel.some(b=>bandsOf(d)[b]!==false);
+  const uvSummary=d=>Object.entries(bandsOf(d)).map(([b,v])=>b+' '+(v===null?'?':v?'✓':'—')).join(' · ');
+
+  /* ---------- numeric matching (unchanged logic) ---------- */
+  function positiveDecimal(value){
+    const text=String(value).trim().replace(',','.');
+    if(!/^(?:\d+(?:\.\d*)?|\.\d+)$/.test(text))return null;
+    const n=Number(text);return Number.isFinite(n)&&n>0?n:null;
+  }
+  function nominalIntervals(row,field){
+    const d=row.chart,ri=field==='riIntervals';
+    const norm=(ri?d.norm:d.sgNorm)||'';
+    if(norm==='Any')return null;
+    const source=norm||(ri?(d.spot||'').replace(/[；;]/g,','):'');
+    if(!source.trim())return null;
+    const v=chartIntervals(source,0,0).filter(p=>p.every(x=>Number.isFinite(x)&&x>0));
+    return v.length?v:null;
+  }
+  function measuredInput(id){
+    const raw=$(id).value.trim(),value=positiveDecimal(raw),invalid=raw!==''&&value===null;
+    $(id).setAttribute('aria-invalid',String(invalid));
+    $(id+'Error').textContent=invalid?`${id.toUpperCase()}：请输入有效正数，此项暂不参与筛选 / Invalid number, skipped.`:'';
+    return value===null?'':raw.replace(',','.');
+  }
+  function numericMatchDistance(iv,value){
+    const m=positiveDecimal(value);
+    if(m===null||!iv?.length)return null;
+    const d=Math.min(...iv.map(([l,h])=>Math.abs((l+h)/2-m)));
+    return (d<1e-9?0:d)/m;
+  }
+  function matchPercent(iv,value){
+    const d=numericMatchDistance(iv,value);
+    if(d===null)return null;
+    return d===0?100:Math.min(99.99,100/(1+d));
+  }
+  function sortByNumericMatch(list,ri,sg){
+    const inputs=[['riIntervals',ri],['sgIntervals',sg]].filter(([,v])=>positiveDecimal(v)!==null);
+    if(!inputs.length)return list;
+    const scored=list.map((row,index)=>{let missing=0,total=0;
+      for(const [f,v] of inputs){const d=numericMatchDistance(nominalIntervals(row,f),v);if(d===null){missing++;continue}total+=d}
+      return {row,index,missing,score:total/inputs.length}});
+    scored.sort((a,b)=>{
+      if(isAssembled(a.row)||isAssembled(b.row))return Number(isAssembled(a.row))-Number(isAssembled(b.row));
+      if(a.missing!==b.missing)return a.missing-b.missing;
+      const delta=a.score-b.score;return Math.abs(delta)>1e-12?delta:a.index-b.index});
+    return scored.map(x=>x.row);
+  }
+  const isAssembled=r=>r.n===64;
+
+  /* ---------- local import ---------- */
+  const STORE_KEY='gemFinder.imports.v1',MANUAL_ID='manual';
+  let editingLine=null;
+  const FIELD_ALIASES={
+    en:['en','name_en','name','english','english name','英文名','英文名称','名称'],
+    zh:['zh','name_zh','chinese','中文名','中文名称','中文'],
+    aliases:['aliases','alias','keywords','别名','关键词'],
+    ri:['ri','ri_norm','折射率','RI标准值'],
+    riRange:['ri_range','ri_tol','ri_variation','RI变化','RI范围','折射率变化'],
+    sg:['sg','sg_norm','比重','相对密度','密度'],
+    sgRange:['sg_range','sg_tol','sg_variation','SG变化','比重变化'],
+    optic:['optic','optics','optical','光性'],
+    colors:['colors','colours','color','colour','颜色','常见颜色'],
+    uncommon:['uncommon','uncommon_colors','少见颜色'],
+    trans:['transparency','trans','透明度'],
+    lw:['lw','长波','LW荧光'],
+    sw:['sw','短波','SW荧光'],
+    biref:['birefringence','biref','双折射率'],
+    hardness:['hardness','mohs','硬度','莫氏硬度'],
+    system:['system','crystal_system','晶系'],
+    axis:['axis','optic_sign','轴性'],
+    pleo:['pleochroism','pleo','多色性'],
+    phenomena:['phenomena','特殊光学效应','现象'],
+    spectra:['spectra','spectrum','光谱','吸收光谱'],
+    uvText:['uv','fluorescence','荧光','荧光描述'],
+    fracture:['fracture','cleavage','断口','解理'],
+    comments:['comments','comment','notes','note','备注','说明'],
+    idGroup:['group','族'],
+    idSeries:['series','系列'],
+    idSpecies:['species','种','矿物种'],
+    idVariety:['variety','变种','品种'],
+    idTn:['tn','trade_name','tradename','商业名','商业名称'],
+  };
+  const normKey=s=>String(s).replace(/^﻿/,'').trim().toLowerCase().replace(/[\s_\-\/（）()]+/g,'');
+  const HEADER_MAP=Object.fromEntries(Object.entries(FIELD_ALIASES).flatMap(([k,l])=>l.map(a=>[normKey(a),k])));
+  const COLOR_TOKENS={无色:'无色',透明:'无色',colourless:'无色',colorless:'无色',c:'无色',紫:'紫',purple:'紫',p:'紫',红:'红',粉:'红',粉红:'红',pink:'红',red:'红',r:'红',橙:'橙',orange:'橙',o:'橙',黄:'黄',yellow:'黄',y:'黄',绿:'绿',green:'绿',g:'绿',蓝:'蓝',blue:'蓝',b:'蓝',蓝紫:'蓝紫',紫罗兰:'蓝紫',violet:'蓝紫',v:'蓝紫',褐:'褐',棕:'褐',brown:'褐',br:'褐',白:'白',white:'白',w:'白',灰:'灰',gray:'灰',grey:'灰',gr:'灰',黑:'黑',black:'黑',bl:'黑'};
+  const TRANS_TOKENS={tp:'Tp',透明:'Tp',transparent:'Tp',stp:'S-Tp',亚透明:'S-Tp',semitransparent:'S-Tp',tl:'Tl',半透明:'Tl',translucent:'Tl',stl:'S-Tl',微透明:'S-Tl',semitranslucent:'S-Tl',op:'O',o:'O',不透明:'O',opaque:'O'};
+  const OPTIC_TOKENS={sr:'SR',单折射:'SR',dr:'DR',双折射:'DR',adr:'ADR',异常双折射:'ADR',agg:'AGG',集合体:'AGG',any:'Any',任意:'Any'};
+  const yesNo=v=>{const t=String(v).trim().toLowerCase();if(!t)return null;if(/^(y|yes|true|1|是|有|✓|√|\+|weak|moderate|strong|弱|中|强)$/.test(t))return true;if(/^(n|no|false|0|否|无|—|-|×|inert|惰性)$/.test(t))return false;return undefined};
+
+  function parseDelimited(text){
+    text=text.replace(/^﻿/,'');
+    const first=text.split(/\r?\n/,1)[0]||'';
+    const delim=first.split('\t').length>first.split(',').length?'\t':first.split(';').length>first.split(',').length?';':',';
+    const out=[];let row=[],field='',q=false;
+    for(let i=0;i<text.length;i++){const c=text[i];
+      if(q){if(c==='"'){if(text[i+1]==='"'){field+='"';i++}else q=false}else field+=c;continue}
+      if(c==='"'&&field.trim()===''){q=true;field='';continue}
+      if(c===delim){row.push(field);field='';continue}
+      if(c==='\n'||c==='\r'){if(c==='\r'&&text[i+1]==='\n')i++;row.push(field);out.push(row);row=[];field='';continue}
+      field+=c}
+    if(field!==''||row.length){row.push(field);out.push(row)}
+    return out.filter(r=>r.some(c=>c.trim()!==''));
+  }
+  // Turns raw text (CSV/TSV/JSON) into [{key:value,...,_line}] with canonical keys.
+  function recordsFromText(text){
+    const warnings=[],trimmed=text.trim();
+    if(!trimmed)throw Error('内容为空 / Empty input');
+    const canon=obj=>{const r={};for(const [k,v] of Object.entries(obj)){const key=HEADER_MAP[normKey(k)];if(!key)continue;r[key]=Array.isArray(v)?v.join(' '):typeof v==='boolean'?(v?'Y':'N'):v==null?'':String(v)}return r};
+    if(/^[\[{]/.test(trimmed)){
+      let data;try{data=JSON.parse(trimmed)}catch(e){throw Error('JSON 格式错误 / Invalid JSON: '+e.message)}
+      const list=Array.isArray(data)?data:Array.isArray(data.records)?data.records:Array.isArray(data.gems)?data.gems:[data];
+      return {records:list.map((o,i)=>({...canon(o||{}),_line:i+1})),warnings};
+    }
+    const table=parseDelimited(text);
+    if(table.length<2)throw Error('至少需要表头和一行数据 / Need a header row and at least one data row');
+    const header=table[0].map(h=>HEADER_MAP[normKey(h)]||null);
+    const unknown=table[0].filter((h,i)=>!header[i]&&h.trim());
+    if(!header.includes('en')&&!header.includes('zh'))throw Error('表头中找不到名称列（en / zh / 名称）/ No name column found in header');
+    if(unknown.length)warnings.push('已忽略未知列 / Ignored columns: '+unknown.join('、'));
+    const records=table.slice(1).map((cells,i)=>{const r={_line:i+2};header.forEach((k,j)=>{if(k&&cells[j]!==undefined)r[k]=cells[j]});return r});
+    return {records,warnings};
+  }
+  function parseValues(raw,label,errors){
+    if(!raw)return '';
+    if(/^(any|任意|不限)$/i.test(raw))return 'Any';
+    const t=raw.replace(/[，；;]/g,',').replace(/\s*(?:–|—|-|~|〜|－|至|to)\s*/gi,'–');
+    const out=[];
+    for(const part of t.split(',').map(s=>s.trim()).filter(Boolean)){
+      const nums=part.split('–').map(s=>s.trim());
+      const vals=nums.map(positiveDecimal);
+      if(nums.length>2||vals.some(v=>v===null)){errors.push(`${label} 无法识别 “${raw}”`);return ''}
+      if(vals[0]>vals.at(-1)){errors.push(`${label} 下限大于上限 “${raw}”`);return ''}
+      out.push(vals[0]===vals.at(-1)?nums[0]:nums[0]+'–'+nums.at(-1));
+    }
+    return out.join(',');
+  }
+  function parseRange(raw,label,errors){
+    if(!raw)return {plus:0,minus:0,text:null};
+    const t=raw.replace(/\s+/g,'').replace(/[−–—－]/g,'-').replace(/＋/g,'+');
+    let m=t.match(/^(?:±|\+-|\+\/-)?(\d*\.?\d+)$/);
+    if(m)return {plus:+m[1],minus:+m[1],text:'± '+m[1]};
+    const p=t.match(/\+(\d*\.?\d+)/),n=t.match(/-(\d*\.?\d+)/);
+    if(p||n)return {plus:p?+p[1]:0,minus:n?+n[1]:0,text:[p?'+ '+p[1]:'',n?'− '+n[1]:''].filter(Boolean).join(' / ')};
+    errors.push(`${label} 无法识别 “${raw}”`);return {plus:0,minus:0,text:null};
+  }
+  function parseColours(raw,warnings){
+    const out=[];
+    for(const tok of String(raw||'').split(/[\s、，,;；\/|]+/).filter(Boolean)){
+      const k=tok.toLowerCase().replace(/色$/,'');const c=COLOR_TOKENS[k]||COLOR_TOKENS[tok.toLowerCase()];
+      if(c){if(!out.includes(c))out.push(c)}else warnings.push(`未识别颜色 “${tok}”`);
+    }
+    return COLOR_ORDER.filter(c=>out.includes(c));
+  }
+  function parseTrans(raw,warnings){
+    if(!raw)return '';
+    const t=raw.toLowerCase().replace(/s-t([pl])/g,'st$1');
+    const idx=t.split(/[\s–—\-~至,，、\/]+/).filter(Boolean).map(x=>{const v=TRANS_TOKENS[x];if(!v)warnings.push(`未识别透明度 “${x}”`);return transOrder.indexOf(v)}).filter(i=>i>=0);
+    if(!idx.length)return '';
+    const lo=Math.min(...idx),hi=Math.max(...idx);
+    return lo===hi?transOrder[lo]:transOrder[lo]+'–'+transOrder[hi];
+  }
+  function parseOptic(raw,warnings){
+    const out=[];
+    for(const tok of String(raw||'').split(/[\s、，,;；\/|]+/).filter(Boolean)){
+      const v=OPTIC_TOKENS[tok.toLowerCase()];if(v){if(!out.includes(v))out.push(v)}else warnings.push(`未识别光性 “${tok}”`);
+    }
+    return out.includes('Any')?['Any']:out;
+  }
+  function buildImportedRow(rec,n,ds){
+    const errors=[],warnings=[],g=k=>String(rec[k]??'').trim();
+    const en=g('en'),zh=g('zh');
+    if(!en&&!zh)errors.push('缺少名称 / Missing name');
+    const riNorm=parseValues(g('ri'),'RI',errors),sgNorm=parseValues(g('sg'),'SG',errors);
+    const rr=parseRange(g('riRange'),'RI 变化',errors),sr=parseRange(g('sgRange'),'SG 变化',errors);
+    const common=parseColours(g('colors'),warnings),uncommon=parseColours(g('uncommon'),warnings).filter(c=>!common.includes(c));
+    const trans=parseTrans(g('trans'),warnings),optic=parseOptic(g('optic'),warnings);
+    const lw=yesNo(g('lw')),sw=yesNo(g('sw'));
+    if(lw===undefined)warnings.push(`LW 值无法识别 “${g('lw')}”，按未知处理`);
+    if(sw===undefined)warnings.push(`SW 值无法识别 “${g('sw')}”，按未知处理`);
+    if(errors.length)return {errors,warnings};
+    const txt=k=>g(k)?[g(k),g(k)]:NA;
+    const anyOptic=!optic.length||optic[0]==='Any';
+    const chart={norm:riNorm,plus:rr.plus,minus:rr.minus,spot:'',biref:g('biref'),optic:anyOptic?(optic.length?'Any':''):optic.filter(o=>o!=='ADR').join(' '),
+      axis:g('axis'),system:g('system'),pleo:g('pleo'),sgNorm,sgPlus:sr.plus,sgMinus:sr.minus,hard:g('hardness'),trans,
+      common:common.join(' '),uncommon:uncommon.join(' '),modifier:'',colourNote:'',phenomena:txt('phenomena'),spectra:txt('spectra'),uv:txt('uvText'),fracture:txt('fracture'),comments:txt('comments'),
+      riSourceRange:rr.text||pairText(NA),sgSourceRange:sr.text||pairText(NA),reviewedRange:true,importedUv:{LW:lw??null,SW:sw??null},importedOpticUnknown:!optic.length};
+    const riIntervals=riNorm&&riNorm!=='Any'?chartIntervals(riNorm,rr.plus,rr.minus):null;
+    const sgIntervals=sgNorm&&sgNorm!=='Any'?chartIntervals(sgNorm,sr.plus,sr.minus):null;
+    const row={n,sourceChart:'U',sourceRow:rec._line,dataset:ds.name,datasetId:ds.id,en:en||zh,zh:en?zh:'',aliases:g('aliases'),chart,riIntervals,sgIntervals,
+      riUnknown:!riNorm,sgUnknown:!sgNorm,riOverLimit:false,optics:anyOptic?'SR DR ADR AGG':optic.join(' '),optic:chart.optic,system:chart.system,colors:[...common,...uncommon].join(' ')};
+    const idf=k=>g(k)?[g(k),g(k)]:null;
+    row.ident={group:idf('idGroup'),series:idf('idSeries'),species:idf('idSpecies'),variety:idf('idVariety'),tn:idf('idTn')};
+    if(!Object.values(row.ident).some(Boolean))row.ident=null;
+    row.identSearch=identSearchText(row.ident);
+    return {row,errors:[],warnings};
+  }
+
+  let datasets=[];
+  try{datasets=JSON.parse(sessionStorage.getItem(STORE_KEY)||'[]');if(!Array.isArray(datasets))datasets=[]}catch{datasets=[]}
+  function saveDatasets(){try{sessionStorage.setItem(STORE_KEY,JSON.stringify(datasets));return true}catch{toast('浏览器存储不可用，刷新后导入数据会丢失 / Storage unavailable');return false}}
+
+  const baseRows=ReviewModel.applyOverrides(createBaseRows(),reviewOverrides);
+  baseRows.forEach(r=>{r.ident=(typeof gemIdentification!=='undefined'&&gemIdentification[r.sourceChart+'-'+r.sourceRow])||null;r.identSearch=identSearchText(r.ident)});
+  let rows=baseRows;
+  function rebuildRows(){
+    let n=5000;const imported=[];
+    for(const ds of datasets)for(const rec of ds.records){const r=buildImportedRow(rec,n++,ds);if(r.row)imported.push(r.row)}
+    rows=[...baseRows,...imported];
+    $('statA').textContent=baseRows.filter(r=>r.sourceChart==='A').length;
+    $('statB').textContent=baseRows.filter(r=>r.sourceChart==='B').length;
+    $('statU').textContent=imported.length;
+    $('statU').parentElement.hidden=!imported.length;
+    $('scopeU').disabled=!imported.length;
+    if(!imported.length&&$('scopeU').checked)document.querySelector('input[name=chart][value=all]').checked=true;
+    renderDatasets();
+  }
+  function importText(text,name){
+    let parsed;
+    try{parsed=recordsFromText(text)}catch(e){return {name,ok:0,errors:[e.message],warnings:[]}}
+    const ok=[],errors=[],warnings=[...parsed.warnings];
+    const ds={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),name,records:[],added:new Date().toLocaleString()};
+    parsed.records.forEach(rec=>{const r=buildImportedRow(rec,0,ds);
+      if(r.errors.length)errors.push(`第 ${rec._line} 行：${r.errors.join('；')}`);
+      else{ok.push(rec);if(r.warnings.length)warnings.push(`第 ${rec._line} 行：${r.warnings.join('；')}`)}});
+    if(ok.length){ds.records=ok;datasets.push(ds);saveDatasets();}
+    return {name,ok:ok.length,errors,warnings};
+  }
+  function showReport(results){
+    const box=$('importReport');box.hidden=false;
+    const total=results.reduce((s,r)=>s+r.ok,0),errs=results.flatMap(r=>r.errors.map(e=>`${r.name}：${e}`)),warns=results.flatMap(r=>r.warnings.map(w=>`${r.name}：${w}`));
+    box.className='report '+(total?'ok':'err');
+    box.innerHTML=(total?`<b>已导入 ${total} 条记录 / Imported ${total} record(s).</b>`:'<b>没有可导入的记录 / Nothing imported.</b>')+
+      (errs.length?`<div style="color:var(--danger);margin-top:6px">跳过 ${errs.length} 处错误 / Skipped:</div><ul>${errs.slice(0,50).map(e=>`<li>${escapeHtml(e)}</li>`).join('')}</ul>`:'')+
+      (warns.length?`<div style="margin-top:6px;color:var(--muted)">提示 / Notes:</div><ul style="color:var(--muted)">${warns.slice(0,50).map(e=>`<li>${escapeHtml(e)}</li>`).join('')}</ul>`:'');
+    if(total){rebuildRows();render();toast(`已导入 ${total} 条 / Imported ${total}`)}
+  }
+  async function importFiles(files){
+    const results=[];
+    for(const f of files){
+      if(f.size>5e6){results.push({name:f.name,ok:0,errors:['文件超过 5MB / File larger than 5 MB'],warnings:[]});continue}
+      try{results.push(importText(await f.text(),f.name))}catch(e){results.push({name:f.name,ok:0,errors:[e.message],warnings:[]})}
+    }
+    showReport(results);
+  }
+  function renderDatasets(){
+    const icon='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg>';
+    const gemIcon='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M6 3h12l4 6-10 12L2 9z"/><path d="M2 9h20"/></svg>';
+    const editIcon='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>';
+    const delIcon='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>';
+    const manual=datasets.find(d=>d.id===MANUAL_ID);
+    const entries=(manual?.records||[]).slice().reverse().map(r=>{
+      const name=[r.zh,r.en].filter(Boolean).join(' / ')||'—',meta=[r.ri&&'RI '+r.ri,r.sg&&'SG '+r.sg,r.optic,r.colors].filter(Boolean).join(' · ')||'未填数值';
+      return `<div class="ds${editingLine===r._line?' is-editing':''}"><span class="ds-icon">${gemIcon}</span><div class="ds-main"><b>${escapeHtml(name)}</b><small class="entry-meta">#${r._line} · ${escapeHtml(meta)}</small></div><button class="icon-btn" type="button" data-edit-line="${r._line}" title="编辑 / Edit" aria-label="编辑 ${escapeHtml(name)}">${editIcon}</button><button class="icon-btn" type="button" data-del-line="${r._line}" title="删除 / Delete" aria-label="删除 ${escapeHtml(name)}" style="color:var(--danger)">${delIcon}</button></div>`});
+    const files=datasets.filter(d=>d.id!==MANUAL_ID).map(ds=>`<div class="ds"><span class="ds-icon">${icon}</span><div class="ds-main"><b title="${escapeHtml(ds.name)}">${escapeHtml(ds.name)}</b><small>批量导入 · ${ds.records.length} 条记录</small></div><button class="btn btn-danger btn-sm" data-remove="${escapeHtml(ds.id)}" type="button">移除</button></div>`);
+    $('datasetList').innerHTML=entries.length||files.length?[...entries,...files].join(''):'<div class="ds-empty">还没有记录。在上方填写后点“保存”即可。<br><span class="en">No entries yet.</span></div>';
+    $('clearImports').disabled=!datasets.length;
+  }
+  const TEMPLATE_HEAD='en,zh,aliases,ri,ri_range,sg,sg_range,optic,colors,transparency,lw,sw,birefringence,hardness,system,comments';
+  const SAMPLE_ROWS=['Tanzanite (sample),坦桑石（示例）,zoisite tanzanite,1.691-1.700,0.005,3.35,0.02,DR,蓝 蓝紫 紫,TP,N,N,0.008-0.013,6-7,斜方晶系,示例记录，可删除','Moissanite (sample),合成碳硅石（示例）,moissanite,2.648-2.691,,3.22,0.02,DR,无色 绿 黄,TP,N,N,0.043,9.25,六方晶系,"折射仪超量程，可用热导仪区分"'];
+  function downloadTemplate(){
+    const blob=new Blob(['﻿'+TEMPLATE_HEAD+'\n'+SAMPLE_ROWS.join('\n')+'\n'],{type:'text/csv;charset=utf-8'});
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='gem-import-template.csv';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+  }
+  let toastTimer;function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),2400)}
+
+  /* ---------- rendering ---------- */
+  const hiddenIds=new Set([64]),expandedIds=new Set();
+  const checked=name=>[...document.querySelectorAll(`input[name="${name}"]:checked`)].map(x=>x.value);
+  const fuzzy=(query,text)=>{if(!query)return true;const target=text.replace(/[\s()\-（）]/g,'').toLowerCase(),needle=query.replace(/[\s()\-（）]/g,'');if(target.includes(needle))return true;let i=0;for(const ch of target)if(ch===needle[i])i++;return i===needle.length};
+  const rangeMatches=(m,tol,iv)=>m===''||iv===null||iv.some(([l,h])=>l<=Number(m)+Number(tol)+1e-9&&h>=Number(m)-Number(tol)-1e-9);
+  const colourDots=v=>'<div class="colour-dots">'+COLOR_ORDER.filter(c=>v.split(' ').includes(c)).map(c=>`<button type="button" class="colour-dot" style="--swatch:${swatches[c]}" aria-label="${c} / ${colorEnglish[c]}"><i aria-hidden="true"></i><span aria-hidden="true">${c} / ${colorEnglish[c]}</span></button>`).join('')+'</div>';
+  const bilingualColours=v=>v?v.split(' ').map(c=>`${c} / ${colorEnglish[c]||c}`).join(' · '):'—';
+  const sourceTag=x=>x.sourceChart==='U'?(x.datasetId===MANUAL_ID?`<span class="tag u" title="手动录入 / Manual entry">我的 · ${x.sourceRow}</span>`:`<span class="tag u" title="${escapeHtml(x.dataset)} · 第 ${x.sourceRow} 行">导入 · ${x.sourceRow}</span>`):`<span class="tag ${x.sourceChart.toLowerCase()}">Chart ${x.sourceChart} · ${x.sourceRow}</span>`;
+  const ICON={eye:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>',
+    eyeOff:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3l18 18M10.6 10.6a2 2 0 0 0 2.8 2.8M9.9 5.2A10 10 0 0 1 12 5c7 0 10 7 10 7a17 17 0 0 1-3.2 4.2M6.3 6.3A17 17 0 0 0 2 12s3 7 10 7a10 10 0 0 0 5.7-1.7"/></svg>',
+    edit:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>',
+    chevron:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>'};
+
+  function meter(label,pct){
+    if(pct===null)return `<div class="meter na"><span>${label}</span><b>—</b></div>`;
+    return `<div class="meter${pct>=99?' hi':''}"><span>${label}</span><b>${pct===100?'100%':pct.toFixed(2)+'%'}</b></div>`;
+  }
+  /* ---------- identification (group / series / species / variety / TN) ---------- */
+  const IDENT_FIELDS=[['group','Group','族'],['series','Series','系列'],['species','Species','种'],['variety','Variety','变种'],['tn','TN','商业名']];
+  function identSearchText(id){
+    if(!id)return '';
+    return ['group','series','species','variety','tn'].flatMap(k=>id[k]||[]).join(' ').toLowerCase().replace(/\s+/g,'');
+  }
+  function identBlock(x){
+    const id=x.ident;
+    if(!id&&x.sourceChart==='U')return '';
+    const cell=v=>{
+      if(!v)return '<span class="ident-na">—</span>';
+      const [en,zh]=v,same=en===zh;
+      return `<span class="ident-zh">${escapeHtml(same?en:zh).replace(/；/g,'<span class="sep">；</span>')}</span>${same?'':`<span class="ident-en">${escapeHtml(en)}</span>`}`;
+    };
+    const rows=IDENT_FIELDS.map(([k,en,zh])=>`<div class="ident-row${k==='tn'?' tn':''}"><dt><b>${en}</b><small>${zh}</small></dt><dd>${cell(id?.[k])}</dd></div>`).join('');
+    const note=id?.note?`<p class="ident-note">ⓘ ${escapeHtml(id.note[1])} / ${escapeHtml(id.note[0])}</p>`:'';
+    return `<section class="ident" aria-label="鉴定分类 / Identification"><h4>鉴定分类 <span>Identification</span></h4><dl>${rows}</dl>${note}</section>`;
+  }
+
+  function detailRows(x){
+    const d=x.chart,imp=x.sourceChart==='U',blank=imp?pairText(NA):sourceBlank;
+    const riDisplay=x.riUnknown?(imp?'未提供 / Not provided':'原表未给数值 / No numeric source RI'):intervalText(x.riIntervals);
+    const sgDisplay=x.sgUnknown?(imp?'未提供 / Not provided':'未知 SG / Unknown SG'):intervalText(x.sgIntervals);
+    const p=[];
+    if(imp)p.push(['数据来源 / Source',`${x.dataset} · 第 ${x.sourceRow} 行 / row ${x.sourceRow}`]);
+    p.push(
+      ['常见颜色 / Common colours',bilingualColours(d.common)],
+      ['少见颜色 / Uncommon colours',bilingualColours(d.uncommon)],
+      ...(imp?[]:[['修饰色 / Modifying colours',bilingualColours(d.modifier)],['颜色说明 / Colour note',d.colourNote||(!d.reviewedRange&&chartDyed.has(x.n)?'可能染色 / May be dyed':sourceBlank)]]),
+      ['透明度 / Transparency',d.trans?transLabel(d.trans)+' · '+d.trans.split('–').map(t=>transWords[t]).join(' → '):blank],
+      ['RI 标准值 / RI Norm',d.norm==='Any'?'任意 / Any':d.norm||blank],
+      ['RI 变化范围 / RI Range',d.reviewedRange||x.sourceChart==='B'?(d.riSourceRange||blank):x.n===44?'± 0.000（原表明确标注 / explicitly printed）':variation(d.plus,d.minus)],
+      ...(imp?[]:[['RI 点测读数 † / RI spot reading †',d.spot||sourceBlank]]),
+      ['RI 筛选区间 / RI filter interval',riDisplay],
+      ['双折射率 / Birefringence',d.biref||blank],
+      ['光性 / Optical character',d.optic==='Any'?'任意 / Any':d.optic?d.optic.split(' ').map(o=>opticWords[o]||o).join('；或 '):blank],
+      ['轴性与光性符号 / Optic axis and sign',axisWords[d.axis]||d.axis||blank],
+      ['晶系 / Crystal system',d.system?d.system+(systemEnglish[d.system]?' / '+systemEnglish[d.system]:'')+(d.system==='无定形'&&!imp?'；原表注：结构可能部分结晶':''):blank],
+      ['多色性 / Pleochroism',d.pleo?d.pleo.split(' ').map(p=>pleoWords[p]||p).join(' · '):blank],
+      ['比重标准值 / SG Norm',d.sgNorm==='Any'?'任意 / Any':d.sgNorm||blank],
+      ['比重变化范围 / SG Range',d.reviewedRange||x.sourceChart==='B'?(d.sgSourceRange||blank):variation(d.sgPlus,d.sgMinus,2)],
+      ['比重筛选区间 / SG filter interval',sgDisplay],
+      ['莫氏硬度 / Mohs hardness',d.hard==='Any'?'任意 / Any':d.hard||blank],
+      ['荧光筛选 / Fluorescence',uvSummary(d).replace(/\?/g,'? 未知')],
+      ['紫外荧光描述 / UV fluorescence',pairText(d.uv)],
+      ['吸收光谱（nm）/ Spectra',pairText(d.spectra),'wide'],
+      ['现象及外观特征 / Phenomena',pairText(d.phenomena),'wide'],
+      ['断口、解理与裂理 / Fracture, cleavage',pairText(d.fracture),'wide'],
+      [imp?'备注 / Comments':'原表备注 / Source comments',pairText(d.comments),'wide'],
+    );
+    if(x.riOverLimit)p.splice(5,0,['折射仪量程 / Refractometer limit','原表标记超量程 / Source marks RI over limit']);
+    return {p,riDisplay,sgDisplay};
+  }
+
+  function render(){
+    const q=$('q').value.trim().toLowerCase(),colors=checked('color'),optics=checked('optic'),trans=checked('trans'),uv=checked('uv');
+    const ri=measuredInput('ri'),sg=measuredInput('sg'),riTol=$('riTol').value,sgTol=$('sgTol').value;
+    const scope=checked('chart')[0]||'all';
+    $('riTolValue').value='± '+Number(riTol).toFixed(3);$('sgTolValue').value='± '+Number(sgTol).toFixed(3);
+
+    const matched=rows.filter(x=>(scope==='all'||x.sourceChart===scope)
+      &&uvMatches(x.chart,uv)&&transparencyMatches(x.chart.trans,trans)
+      &&(fuzzy(q,`${x.en} ${x.zh} ${x.aliases}`)||(q&&x.identSearch?.includes(q.replace(/\s+/g,''))))
+      &&(!colors.length||colors.some(c=>x.colors.split(' ').includes(c)))
+      &&rangeMatches(ri,riTol,x.riIntervals)&&rangeMatches(sg,sgTol,x.sgIntervals)
+      &&(!optics.length||optics.some(o=>x.optics.split(' ').includes(o==='ADR'?'SR':o))));
+    const hiddenCount=matched.filter(x=>hiddenIds.has(x.n)).length;
+    const ordered=[...matched.filter(x=>!isAssembled(x)),...matched.filter(isAssembled)];
+    const list=$('sortByMatch').checked?sortByNumericMatch(ordered,ri,sg):ordered;
+    const shown=list.length-hiddenCount;
+
+    $('resultCount').innerHTML=`${shown}<small>个候选 / candidates${hiddenCount?` · 已隐藏 ${hiddenCount}`:''}</small>`;
+    $('jumpCount').textContent=shown;$('sheetCount').textContent=shown;
+    requestAnimationFrame(updateShadows);
+    $('restoreAll').hidden=hiddenIds.size===0;
+
+    // Active filter chips
+    const chips=[];
+    if(q)chips.push(['q',`“${q}”`]);
+    if(scope!=='all')chips.push(['scope',{A:'Chart A',B:'Chart B',U:'仅我的 / Mine'}[scope]]);
+    if(ri)chips.push(['ri',`RI ${Number(ri).toFixed(3)}${+riTol?' ± '+Number(riTol).toFixed(3):''}`]);
+    if(sg)chips.push(['sg',`SG ${Number(sg).toFixed(3)}${+sgTol?' ± '+Number(sgTol).toFixed(3):''}`]);
+    colors.forEach(c=>chips.push(['color:'+c,c]));
+    optics.forEach(o=>chips.push(['optic:'+o,o]));
+    trans.forEach(t=>chips.push(['trans:'+t,transLabel(t)]));
+    uv.forEach(b=>chips.push(['uv:'+b,b+' 荧光']));
+    $('chips').innerHTML=chips.length?chips.map(([k,l])=>`<span class="chip">${escapeHtml(l)}<button type="button" data-chip="${escapeHtml(k)}" aria-label="移除 ${escapeHtml(l)}">×</button></span>`).join(''):'<span class="none">未设置筛选条件 · 输入 RI / SG 开始</span>';
+    $('filterBadge').textContent=chips.length||'';
+    $('cntNum').textContent=[ri,sg].filter(Boolean).length||'';
+    $('cntColor').textContent=colors.length||'';
+    $('cntOptic').textContent=optics.length+uv.length||'';
+    $('cntTrans').textContent=trans.length||'';
+
+    if(!list.length){
+      $('results').innerHTML=`<tbody><tr class="empty-row"><td class="empty" colspan="8"><b>没有相符候选 / No matching candidates</b>试试放宽误差、减少颜色或光性条件。</td></tr></tbody>`;
+      return;
+    }
+    const head=`<thead><tr><th>宝石材料<span class="en">Gem material</span></th><th>颜色<span class="en">Colour</span></th><th>透明度<span class="en">Transparency</span></th><th>RI<span class="en">filter interval</span></th><th>SG<span class="en">filter interval</span></th><th>光性<span class="en">Optics</span></th><th>匹配程度<span class="en">Match</span></th><th><span class="en" style="display:inline">操作</span></th></tr></thead>`;
+    const body=list.map(x=>{
+      const folded=hiddenIds.has(x.n),open=expandedIds.has(x.n),d=x.chart;
+      const hideBtn=`<button class="icon-btn hide-btn" type="button" data-hide="${x.n}" aria-label="${folded?'恢复':'隐藏'} ${escapeHtml(x.en)}" title="${folded?'恢复 / Restore':'隐藏 / Hide'}">${folded?ICON.eyeOff:ICON.eye}</button>`;
+      if(folded)return `<tr class="excluded"><td colspan="7" class="name-cell"><span class="name-en">${escapeHtml(x.en)}</span> <span class="name-zh" style="display:inline">${escapeHtml(x.zh)}</span> ${sourceTag(x)} <span class="uv">已隐藏 / Hidden</span></td><td class="actions">${hideBtn}</td></tr>`;
+      const {p,riDisplay,sgDisplay}=detailRows(x);
+      const transCell=d.trans?`<strong>${transLabel(d.trans)}</strong><small>${escapeHtml(d.trans.split('–').map(t=>transWords[t].split(' / ')[0]).join('–'))}</small>`:'<small>未提供</small>';
+      const opticCell=d.importedOpticUnknown?'<small class="uv">未提供</small>':escapeHtml(x.optics||'—');
+      const detail=open?`<tr class="detail-row" id="detail-${x.n}"><td colspan="8"><div class="gem-details" id="detail-content-${x.n}"><h3>${escapeHtml(x.en)}<small>${escapeHtml(x.zh)}</small></h3>${identBlock(x)}<dl>${p.map(([k,v,w])=>`<div${w?' class="wide"':''}><dt>${k}</dt><dd>${escapeHtml(v)}</dd></div>`).join('')}</dl></div></td></tr>`:'';
+      return `<tr class="gem-row${open?' is-open':''}">
+        <td class="name-cell"><span class="name-en">${escapeHtml(x.en)}</span><span class="name-zh">${escapeHtml(x.zh)}</span><div class="meta">${sourceTag(x)}<span class="uv" title="荧光：✓ 有，— 无，? 未知">${escapeHtml(uvSummary(d))}</span></div></td>
+        <td class="colour-cell" data-label="颜色 / Colour">${x.colors?colourDots(x.colors):'<small class="uv">未提供</small>'}</td>
+        <td class="trans-cell" data-label="透明度 / Transparency">${transCell}</td>
+        <td class="num" data-label="RI">${escapeHtml(riDisplay)}</td>
+        <td class="num" data-label="SG">${escapeHtml(sgDisplay)}</td>
+        <td class="optics" data-label="光性 / Optics">${opticCell}</td>
+        <td class="match" data-label="匹配 / Match">${meter('RI',matchPercent(nominalIntervals(x,'riIntervals'),ri))}${meter('SG',matchPercent(nominalIntervals(x,'sgIntervals'),sg))}</td>
+        <td class="actions"><button class="icon-btn detail-btn" type="button" data-detail="${x.n}" aria-expanded="${open}" aria-controls="detail-${x.n}" title="${open?'收起 / Close':'详情 / Details'}" aria-label="${open?'收起':'展开'} ${escapeHtml(x.en)}">${ICON.chevron}</button>${x.datasetId===MANUAL_ID?`<button class="icon-btn" type="button" data-edit-line="${x.sourceRow}" title="编辑 / Edit" aria-label="编辑 ${escapeHtml(x.en)}">${ICON.edit}</button>`:''}${hideBtn}</td>
+      </tr>${detail}`;
+    }).join('');
+    $('results').innerHTML=head+'<tbody>'+body+'</tbody>';
+  }
+
+  /* ---------- events ---------- */
+  function updateSgCalculator(){
+    const air=Number($('airWeight').value.trim().replace(',','.')),water=Number($('waterWeight').value.trim().replace(',','.'));
+    const valid=$('airWeight').value.trim()&&$('waterWeight').value.trim()&&Number.isFinite(air)&&Number.isFinite(water)&&air>water&&water>0;
+    const result=valid?air/(air-water):null;
+    $('sgCalcResult').textContent=result==null?'SG —':`SG ${result.toFixed(3)}`;
+    $('useSg').disabled=result==null;$('useSg').dataset.result=result==null?'':result.toFixed(3);
+  }
+  function resetFilters(){
+    ['q','ri','sg'].forEach(id=>$(id).value='');$('riTol').value=0;$('sgTol').value=0;
+    document.querySelectorAll('input[name=color],input[name=optic],input[name=trans],input[name=uv]').forEach(el=>el.checked=false);
+    document.querySelector('input[name=chart][value=all]').checked=true;render();
+  }
+  $('results').addEventListener('click',e=>{
+    const ed=e.target.closest('[data-edit-line]');if(ed){openEditor(Number(ed.dataset.editLine));return}
+    const det=e.target.closest('[data-detail]'),hide=e.target.closest('[data-hide]');
+    if(det){const id=Number(det.dataset.detail),opening=!expandedIds.has(id);opening?expandedIds.add(id):expandedIds.delete(id);render();
+      const b=document.querySelector(`[data-detail="${id}"]`);b?.focus({preventScroll:true});
+      if(opening){$('results').parentElement.scrollLeft=0;$('detail-content-'+id)?.scrollIntoView({block:'nearest'})}}
+    if(hide){const id=Number(hide.dataset.hide);hiddenIds.has(id)?hiddenIds.delete(id):hiddenIds.add(id);render();document.querySelector(`[data-hide="${id}"]`)?.focus({preventScroll:true})}
+  });
+  $('chips').addEventListener('click',e=>{
+    const b=e.target.closest('[data-chip]');if(!b)return;const [k,v]=b.dataset.chip.split(':');
+    if(k==='q'||k==='ri'||k==='sg')$(k).value='';
+    else if(k==='scope')document.querySelector('input[name=chart][value=all]').checked=true;
+    else{const el=document.querySelector(`input[name="${k}"][value="${CSS.escape(v)}"]`);if(el)el.checked=false}
+    render();
+  });
+  $('sortByMatch').addEventListener('change',render);
+  ['q','ri','riTol','sg','sgTol'].forEach(id=>$(id).addEventListener('input',render));
+  ['airWeight','waterWeight'].forEach(id=>$(id).addEventListener('input',updateSgCalculator));
+  $('useSg').addEventListener('click',()=>{const r=$('useSg').dataset.result;if(r){$('sg').value=r;render();$('sg').focus()}});
+  $('restoreAll').addEventListener('click',()=>{hiddenIds.clear();render()});
+  $('resetFilters').addEventListener('click',resetFilters);
+  document.querySelectorAll('input[name=color],input[name=optic],input[name=trans],input[name=uv],input[name=chart]').forEach(el=>el.addEventListener('change',render));
+
+  // Import dialog
+  const dlg=$('importDialog');
+  $('openImport').addEventListener('click',()=>{$('importReport').hidden=true;$('formError').textContent='';renderDatasets();dlg.showModal();$('fZh').focus()});
+  [$('closeImport'),$('doneImport')].forEach(b=>b.addEventListener('click',()=>dlg.close()));
+  dlg.addEventListener('click',e=>{if(e.target===dlg)dlg.close()});
+  $('fileInput').addEventListener('change',e=>{if(e.target.files.length)importFiles([...e.target.files]);e.target.value=''});
+  const dz=$('dropZone');
+  ['dragenter','dragover'].forEach(t=>dz.addEventListener(t,e=>{e.preventDefault();dz.classList.add('over')}));
+  ['dragleave','drop'].forEach(t=>dz.addEventListener(t,e=>{e.preventDefault();dz.classList.remove('over')}));
+  dz.addEventListener('drop',e=>{const f=[...(e.dataTransfer?.files||[])];if(f.length)importFiles(f)});
+  // Allow dropping a file anywhere on the page to open the importer.
+  window.addEventListener('dragover',e=>{if(e.dataTransfer?.types?.includes('Files'))e.preventDefault()});
+  window.addEventListener('drop',e=>{if(dz.contains(e.target))return;const f=[...(e.dataTransfer?.files||[])];if(!f.length)return;e.preventDefault();if(!dlg.open)dlg.showModal();importFiles(f)});
+  $('importPaste').addEventListener('click',()=>{const t=$('pasteBox').value;if(!t.trim()){toast('请先粘贴内容 / Paste something first');return}const r=importText(t,'粘贴内容 / Pasted '+(datasets.length+1));showReport([r]);if(r.ok)$('pasteBox').value=''});
+  $('fillSample').addEventListener('click',()=>{$('pasteBox').value=TEMPLATE_HEAD+'\n'+SAMPLE_ROWS.join('\n')});
+  $('downloadTemplate').addEventListener('click',downloadTemplate);
+  $('datasetList').addEventListener('click',e=>{
+    const ed=e.target.closest('[data-edit-line]');if(ed){openEditor(Number(ed.dataset.editLine));return}
+    const del=e.target.closest('[data-del-line]');if(del){deleteEntry(Number(del.dataset.delLine));return}
+    const b=e.target.closest('[data-remove]');if(!b)return;datasets=datasets.filter(d=>d.id!==b.dataset.remove);saveDatasets();rebuildRows();render();toast('已移除 / Removed')});
+  $('clearImports').addEventListener('click',()=>{if(!datasets.length||!confirm('清空全部我的宝石记录？/ Clear all your entries?'))return;datasets=[];resetForm();saveDatasets();rebuildRows();render();$('importReport').hidden=true;toast('已清空 / Cleared')});
+
+  /* ---------- manual entry form ---------- */
+  $('fColors').innerHTML=COLOR_ORDER.map(c=>`<label class="choice" style="--swatch:${swatches[c]}"><input name="fColor" value="${c}" type="checkbox"><span>${c}</span></label>`).join('');
+  const TRANS_CODE={Tp:'TP','S-Tp':'STP',Tl:'TL','S-Tl':'STL',O:'OP'};
+  const radioVal=name=>document.querySelector(`input[name="${name}"]:checked`)?.value||'';
+  const setChecks=(name,values)=>document.querySelectorAll(`input[name="${name}"]`).forEach(el=>el.checked=values.includes(el.value));
+  const setRadio=(name,v)=>{const el=document.querySelector(`input[name="${name}"][value="${v||''}"]`);if(el)el.checked=true};
+  const FORM_TEXT={fZh:'zh',fEn:'en',fRi:'ri',fRiRange:'riRange',fSg:'sg',fSgRange:'sgRange',fHard:'hardness',fBiref:'biref',fAliases:'aliases',fComments:'comments',fIdGroup:'idGroup',fIdSeries:'idSeries',fIdSpecies:'idSpecies',fIdVariety:'idVariety',fIdTn:'idTn'};
+  function formRecord(){
+    const rec={};
+    for(const [id,key] of Object.entries(FORM_TEXT)){const v=$(id).value.trim();if(v)rec[key]=v}
+    const opt=checked('fOptic'),col=checked('fColor'),tr=checked('fTrans');
+    if(opt.length)rec.optic=opt.join(' ');if(col.length)rec.colors=col.join(' ');if(tr.length)rec.trans=tr.join(' ');
+    if(radioVal('fLw'))rec.lw=radioVal('fLw');if(radioVal('fSw'))rec.sw=radioVal('fSw');
+    return rec;
+  }
+  function resetForm(){
+    $('gemForm').reset();editingLine=null;$('formError').textContent='';
+    $('gemForm').classList.remove('editing');$('formMode').textContent='新增一条 / New entry';
+    $('cancelEdit').hidden=true;$('saveGem').textContent='保存 / Save';
+    document.querySelectorAll('#gemForm [aria-invalid]').forEach(el=>el.removeAttribute('aria-invalid'));
+    renderDatasets();
+  }
+  function openEditor(line){
+    const rec=datasets.find(d=>d.id===MANUAL_ID)?.records.find(r=>r._line===line);if(!rec)return;
+    resetForm();
+    for(const [id,key] of Object.entries(FORM_TEXT))$(id).value=rec[key]||'';
+    setChecks('fOptic',(rec.optic||'').split(' '));setChecks('fColor',(rec.colors||'').split(' '));setChecks('fTrans',(rec.trans||'').split(' '));
+    setRadio('fLw',rec.lw);setRadio('fSw',rec.sw);
+    if(rec.hardness||rec.biref||rec.aliases||rec.comments||rec.idGroup||rec.idSeries||rec.idSpecies||rec.idVariety||rec.idTn)document.querySelector('#gemForm .more').open=true;
+    editingLine=line;$('gemForm').classList.add('editing');$('formMode').textContent=`编辑 #${line} / Editing`;
+    $('cancelEdit').hidden=false;$('saveGem').textContent='保存修改 / Update';renderDatasets();
+    if(!dlg.open)dlg.showModal();
+    $('gemForm').scrollIntoView({block:'start'});$('fZh').focus({preventScroll:true});
+  }
+  function deleteEntry(line){
+    const ds=datasets.find(d=>d.id===MANUAL_ID);if(!ds)return;
+    const rec=ds.records.find(r=>r._line===line);if(!rec||!confirm(`删除“${rec.zh||rec.en}”？/ Delete this entry?`))return;
+    ds.records=ds.records.filter(r=>r._line!==line);
+    if(!ds.records.length)datasets=datasets.filter(d=>d!==ds);
+    if(editingLine===line)resetForm();
+    saveDatasets();rebuildRows();render();toast('已删除 / Deleted');
+  }
+  $('gemForm').addEventListener('submit',e=>{
+    e.preventDefault();
+    const rec=formRecord();
+    let ds=datasets.find(d=>d.id===MANUAL_ID);
+    const line=editingLine??(Math.max(0,...(ds?.records||[]).map(r=>r._line))+1);
+    rec._line=line;
+    const check=buildImportedRow(rec,0,ds||{id:MANUAL_ID,name:''});
+    const bad={ri:$('fRi'),sg:$('fSg'),riRange:$('fRiRange'),sgRange:$('fSgRange')};
+    Object.values(bad).forEach(el=>el.removeAttribute('aria-invalid'));
+    if(check.errors.length){
+      $('formError').textContent=check.errors.map(m=>m.replace('缺少名称 / Missing name','请至少填写中文名或英文名')).join('；');
+      if(!rec.zh&&!rec.en)$('fZh').setAttribute('aria-invalid','true');
+      check.errors.forEach(m=>{if(/^RI 变化/.test(m))bad.riRange.setAttribute('aria-invalid','true');else if(/^SG 变化/.test(m))bad.sgRange.setAttribute('aria-invalid','true');else if(/^RI/.test(m))bad.ri.setAttribute('aria-invalid','true');else if(/^SG/.test(m))bad.sg.setAttribute('aria-invalid','true')});
+      return;
+    }
+    if(!ds){ds={id:MANUAL_ID,name:'手动录入 / Manual',records:[],added:''};datasets.unshift(ds)}
+    const updating=editingLine!==null;
+    ds.records=updating?ds.records.map(r=>r._line===line?rec:r):[...ds.records,rec];
+    saveDatasets();rebuildRows();render();resetForm();
+    toast(updating?'已更新 / Updated':`已保存“${rec.zh||rec.en}” / Saved`);
+    $('fZh').focus();
+  });
+  $('cancelEdit').addEventListener('click',resetForm);
+  $('clearForm').addEventListener('click',()=>{const line=editingLine;$('gemForm').reset();$('formError').textContent='';if(line!==null){editingLine=line}});
+  // Copy what the user just measured / selected in the filters into the form.
+  $('fillFromFilters').addEventListener('click',()=>{
+    const ri=positiveDecimal($('ri').value),sg=positiveDecimal($('sg').value);
+    if(ri)$('fRi').value=$('ri').value.trim().replace(',','.');
+    if(sg)$('fSg').value=$('sg').value.trim().replace(',','.');
+    if(+$('riTol').value)$('fRiRange').value=Number($('riTol').value).toFixed(3);
+    if(+$('sgTol').value)$('fSgRange').value=Number($('sgTol').value).toFixed(3);
+    const cols=checked('color'),opts=checked('optic'),trs=checked('trans'),uv=checked('uv');
+    if(cols.length)setChecks('fColor',cols);if(opts.length)setChecks('fOptic',opts);
+    if(trs.length)setChecks('fTrans',trs.map(t=>TRANS_CODE[t]));
+    uv.forEach(b=>setRadio(b==='LW'?'fLw':'fSw','Y'));
+    toast(ri||sg||cols.length||opts.length?'已填入当前筛选值 / Filled':'筛选栏里还没有输入数值 / No filter values yet');
+  });
+
+  /* ---------- table: horizontal swipe shadows ---------- */
+  function updateShadows(){
+    const w=$('tableWrap'),s=$('tableShell'),max=w.scrollWidth-w.clientWidth;
+    s.classList.toggle('can-left',w.scrollLeft>2);
+    s.classList.toggle('can-right',max>2&&w.scrollLeft<max-2);
+  }
+  $('tableWrap').addEventListener('scroll',()=>{if($('tableWrap').scrollLeft>10)$('tableShell').classList.add('scrolled');updateShadows()},{passive:true});
+  window.addEventListener('resize',updateShadows);
+
+  /* ---------- mobile filter sheet (swipe down to close) ---------- */
+  const sheet=$('filterSheet'),mobileQuery=matchMedia('(max-width:980px)');
+  function setSheet(open){
+    if(!mobileQuery.matches)open=false;
+    sheet.classList.toggle('open',open);
+    $('sheetBackdrop').classList.toggle('show',open);
+    document.documentElement.classList.toggle('sheet-open',open);
+    $('openSheet').setAttribute('aria-expanded',String(open));
+    sheet.style.transform='';
+    if(open){sheet.scrollTop=0;sheet.focus({preventScroll:true})}
+  }
+  $('openSheet').addEventListener('click',()=>setSheet(true));
+  [$('closeSheet'),$('sheetBackdrop')].forEach(el=>el.addEventListener('click',()=>setSheet(false)));
+  $('sheetDone').addEventListener('click',()=>{setSheet(false);$('resultsSection').scrollIntoView({block:'start'})});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&sheet.classList.contains('open')&&!dlg.open)setSheet(false)});
+  mobileQuery.addEventListener('change',()=>setSheet(false));
+  // Drag from the header anywhere, or from the content when it is scrolled to the top.
+  let drag=null;
+  sheet.addEventListener('touchstart',e=>{
+    if(!sheet.classList.contains('open')||e.touches.length!==1)return;
+    const fromHead=$('sheetHead').contains(e.target)&&!e.target.closest('button');
+    if(!fromHead&&sheet.scrollTop>0)return;
+    drag={y:e.touches[0].clientY,t:Date.now(),dy:0,fromHead,active:fromHead};
+  },{passive:true});
+  sheet.addEventListener('touchmove',e=>{
+    if(!drag)return;
+    const dy=e.touches[0].clientY-drag.y;
+    if(!drag.active){if(dy>6&&sheet.scrollTop<=0)drag.active=true;else if(dy<0){drag=null;return}else return}
+    drag.dy=Math.max(0,dy);
+    sheet.classList.add('dragging');sheet.style.transform=`translateY(${drag.dy}px)`;
+    $('sheetBackdrop').style.opacity=String(Math.max(0,1-drag.dy/400));
+    e.preventDefault();
+  },{passive:false});
+  sheet.addEventListener('touchend',()=>{
+    if(!drag)return;
+    const speed=drag.dy/Math.max(1,Date.now()-drag.t);
+    sheet.classList.remove('dragging');$('sheetBackdrop').style.opacity='';
+    if(drag.active&&(drag.dy>sheet.offsetHeight*.25||speed>.6))setSheet(false);else sheet.style.transform='';
+    drag=null;
+  });
+
+  /* ---------- back to top / results count ---------- */
+  window.addEventListener('scroll',()=>$('toTop').classList.toggle('show',scrollY>innerHeight*1.5),{passive:true});
+  $('toTop').addEventListener('click',()=>scrollTo({top:0}));
+  $('barCount').addEventListener('click',()=>$('resultsSection').scrollIntoView({block:'start'}));
+
+  rebuildRows();updateSgCalculator();render();
+  </script>
+</body>
+</html>

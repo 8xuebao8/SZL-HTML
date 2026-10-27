@@ -75,7 +75,7 @@
 
     /* Layout */
     .layout{max-width:1440px;margin:0 auto;padding:16px 24px 32px;display:grid;grid-template-columns:340px minmax(0,1fr);gap:20px;align-items:start}
-    .sidebar{position:sticky;top:16px;max-height:calc(100vh - 32px);overflow:auto;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overscroll-behavior:contain}
+    .sidebar{position:sticky;top:16px;max-height:calc(100vh - 32px);overflow:auto;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
     .sidebar-head{position:sticky;top:0;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:14px 16px 12px;background:var(--surface);border-bottom:1px solid var(--line)}
     .sidebar-head h2{margin:0;font-size:15px}
     .sidebar-body{padding:14px 16px 18px;display:grid;gap:14px}
@@ -1291,12 +1291,30 @@
     drag=null;
   });
 
+  /* ---------- desktop: keep both panes inside the visible screen ---------- */
+  // While the header is still on screen, the sticky panes start lower down; shrink them so
+  // their bottom edge (e.g. the transparency filters) is always reachable.
+  let fitQueued=false;
+  function fitPanes(){
+    fitQueued=false;
+    const side=document.querySelector('.sidebar'),res=$('resultsSection');
+    if(mobileQuery.matches){side.style.maxHeight='';res.style.height='';return}
+    const avail=top=>Math.max(240,innerHeight-Math.max(16,top)-16)+'px';
+    side.style.maxHeight=avail(side.getBoundingClientRect().top);
+    res.style.height=avail(res.getBoundingClientRect().top);
+    updateShadows();
+  }
+  const queueFit=()=>{if(!fitQueued){fitQueued=true;requestAnimationFrame(fitPanes)}};
+  window.addEventListener('scroll',queueFit,{passive:true});
+  window.addEventListener('resize',queueFit);
+  mobileQuery.addEventListener('change',queueFit);
+
   /* ---------- back to top / results count ---------- */
   window.addEventListener('scroll',()=>$('toTop').classList.toggle('show',scrollY>innerHeight*1.5),{passive:true});
   $('toTop').addEventListener('click',()=>scrollTo({top:0}));
   $('barCount').addEventListener('click',()=>$('resultsSection').scrollIntoView({block:'start'}));
 
-  rebuildRows();updateSgCalculator();render();
+  rebuildRows();updateSgCalculator();render();fitPanes();
   </script>
 </body>
 </html>
